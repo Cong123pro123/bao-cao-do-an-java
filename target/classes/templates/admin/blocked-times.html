@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Chặn lịch và bảo trì', ~{::main})}">
+<head><title>Chặn lịch và bảo trì</title></head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="eyebrow">Quản trị · Giờ hoạt động &amp; Lịch</span>
+                <h1 class="h2 mb-1">Chặn lịch &amp; Bảo trì sân</h1>
+                <p class="text-secondary mb-0">Thiết lập ngày nghỉ lễ, giải đấu hoặc khung giờ bảo trì để hệ thống tự động khóa lịch đặt.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-pb" th:href="@{/admin/blocked-times/new(courtId=${selectedCourtId})}">＋ Thêm lịch chặn mới</a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <form class="panel row g-3 align-items-end mb-4" method="get" th:action="@{/admin/blocked-times}">
+            <div class="col-md-6">
+                <label class="form-label" for="courtId">Lọc theo sân</label>
+                <select id="courtId" class="form-select" name="courtId" onchange="this.form.submit()">
+                    <option value="">Tất cả (bao gồm toàn hệ thống)</option>
+                    <option th:each="court : ${courts}" th:value="${court.id}" th:text="${court.name}"
+                            th:selected="${court.id == selectedCourtId}"></option>
+                </select>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <span class="text-secondary small">Các khung giờ bị chặn sẽ tự động hiển thị trạng thái "Bảo trì / Sự kiện" đối với khách hàng.</span>
+            </div>
+        </form>
+
+        <div class="panel p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Tiêu đề / Lý do</th>
+                        <th>Phạm vi áp dụng</th>
+                        <th>Loại chặn</th>
+                        <th>Thời gian bắt đầu</th>
+                        <th>Thời gian kết thúc</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${blockedTimes}">
+                        <td>
+                            <strong class="d-block" th:text="${item.title}">Bảo trì mặt sân</strong>
+                            <span class="badge text-bg-warning small" th:if="${item.affectsPricing}">Áp dụng bảng giá ngày lễ</span>
+                        </td>
+                        <td>
+                            <span class="badge text-bg-primary" th:if="${item.court != null}" th:text="${item.court.name}">Sân 1</span>
+                            <span class="badge text-bg-dark" th:if="${item.court == null}">Toàn bộ sân</span>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${item.blockType.name() == 'MAINTENANCE' ? 'text-bg-warning' : item.blockType.name() == 'HOLIDAY' ? 'text-bg-danger' : 'text-bg-info'}"
+                                  th:text="${item.blockType.label}">Bảo trì</span>
+                        </td>
+                        <td th:text="${#temporals.format(item.startAt, 'dd/MM/yyyy HH:mm')}">01/01/2026 06:00</td>
+                        <td th:text="${#temporals.format(item.endAt, 'dd/MM/yyyy HH:mm')}">01/01/2026 12:00</td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a class="btn btn-sm btn-pb-ghost" th:href="@{/admin/blocked-times/{id}/edit(id=${item.id})}">Sửa</a>
+                                <form th:action="@{/admin/blocked-times/{id}/delete(id=${item.id})}" method="post"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa lịch chặn này không?');">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(blockedTimes)}">
+                        <td colspan="6" class="text-center py-5">
+                            <strong class="d-block mb-1">Hiện không có lịch chặn nào</strong>
+                            <span class="text-secondary">Tất cả các sân hoạt động bình thường theo thời gian biểu mở cửa.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
+

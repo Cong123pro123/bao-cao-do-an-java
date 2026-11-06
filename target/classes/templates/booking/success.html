@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/main :: layout('Đặt sân thành công', ~{::main})}">
+
+<head>
+    <title>Đặt sân thành công</title>
+</head>
+
+<body>
+    <main>
+        <section class="section">
+            <div class="container">
+                <div class="panel text-center mx-auto shadow-sm" style="max-width: 760px">
+                    <div class="mb-3">
+                        <span class="badge rounded-circle p-3 text-bg-success fs-3">✓</span>
+                    </div>
+                    <span class="eyebrow d-block">Đã tiếp nhận và giữ chỗ</span>
+                    <h1 class="section-title mb-2">Đặt sân Pickleball thành công!</h1>
+                    <p class="text-secondary mb-4">Hệ thống đã ghi nhận lịch của bạn và gửi thông tin xác nhận tới email
+                        đăng ký.</p>
+
+                    <!-- Ticket Pass Card -->
+                    <div class="card border-success border-2 bg-light mb-4 text-start">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-8">
+                                    <span class="text-secondary small text-uppercase fw-bold">Mã vé Check-in của bạn:</span>
+                                    <h2 class="h3 text-success fw-bold mb-3" id="bookingCode"
+                                        th:text="${booking != null ? booking.bookingCode : 'PB000000'}">PB000000</h2>
+
+                                    <p class="mb-1"><strong>🏸 Sân:</strong> <span th:text="${booking != null and booking.court != null ? booking.court.name : 'Sân Pickleball'}">Sân 1</span></p>
+                                    <p class="mb-1"><strong>📍 Địa chỉ:</strong>
+                                        <span th:text="${booking != null and booking.court != null and booking.court.branch != null ? (booking.court.branch.name + ' · ' + booking.court.branch.address) : (booking != null and booking.court != null ? booking.court.name : 'Địa chỉ sân')}">Địa chỉ</span>
+                                    </p>
+                                    <p class="mb-1"><strong>🕒 Thời gian:</strong>
+                                        <span class="text-primary fw-semibold"
+                                            th:text="${booking != null and booking.startAt != null and booking.endAt != null ? (#temporals.format(booking.startAt, 'dd/MM/yyyy HH:mm') + ' - ' + #temporals.format(booking.endAt, 'HH:mm')) : ''}">01/01/2026 06:00 - 07:00</span>
+                                    </p>
+                                    <p class="mb-0"><strong>💰 Tổng thanh toán:</strong>
+                                        <span class="fw-bold text-success fs-5"
+                                            th:text="${booking != null and booking.finalAmount != null ? (#numbers.formatDecimal(booking.finalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : '0 ₫'}">150.000 ₫</span>
+                                    </p>
+                                </div>
+
+                                <!-- QR Code for Check-in -->
+                                <div class="col-md-4 text-center border-start-md">
+                                    <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=4&data=' + ${booking != null ? booking.bookingCode : 'PB'}"
+                                        alt="QR Code Check-in" class="img-fluid rounded border bg-white p-1 mb-2"
+                                        width="140" height="140">
+                                    <small class="d-block text-secondary">Đưa mã QR này tại quầy để check-in vào sân</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VietQR Payment Banner (if bank transfer or online) -->
+                    <div class="panel border-success mb-4 text-start bg-light shadow-sm"
+                        th:if="${booking != null and booking.paymentMethod != null and (booking.paymentMethod.name() == 'BANK_TRANSFER' or booking.paymentMethod.name() == 'ONLINE' or booking.paymentMethod == 'BANK_TRANSFER')}">
+                        <div
+                            class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
+                            <div>
+                                <h3 class="h5 fw-bold text-success mb-0">💳 Chuyển khoản VietQR Chuẩn Napas 24/7</h3>
+                                <small class="text-secondary">Quét mã bằng bất kỳ App Ngân hàng (Vietcombank, MB, Techcombank, VPBank, MoMo...)</small>
+                            </div>
+                            <!-- Switch full or deposit payment -->
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-success active" id="btnPayFull"
+                                    onclick="switchQrMode('full')">
+                                    Thanh toán 100% (<span
+                                        th:text="${vietQr != null and vietQr.totalAmount != null ? (#numbers.formatDecimal(vietQr.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : (booking.finalAmount != null ? (#numbers.formatDecimal(booking.finalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : '0 ₫')}">150.000 ₫</span>)
+                                </button>
+                                <button type="button" class="btn btn-outline-success" id="btnPayDeposit"
+                                    onclick="switchQrMode('deposit')">
+                                    Đặt cọc 30% (<span
+                                        th:text="${vietQr != null and vietQr.depositAmount != null ? (#numbers.formatDecimal(vietQr.depositAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : '45.000 ₫'}">45.000 ₫</span>)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row align-items-center g-3">
+                            <div class="col-md-5 text-center">
+                                <div class="bg-white p-2 rounded border d-inline-block shadow-sm">
+                                    <img id="vietQrImg"
+                                        th:src="${vietQr != null and vietQr.fullQrUrl != null ? vietQr.fullQrUrl : ('https://img.vietqr.io/image/VCB-9342804412-compact2.png?amount=' + (booking.finalAmount != null ? booking.finalAmount : 0) + '&addInfo=' + booking.bookingCode + '&accountName=DOAN+NGUYEN+THANH+CONG')}"
+                                        alt="VietQR Chuyển khoản"
+                                        class="img-fluid" style="max-width: 230px; min-height: 230px;">
+                                </div>
+                                <div class="mt-2 text-center" id="paymentLiveStatus">
+                                    <span class="badge text-bg-warning px-3 py-2 animate-pulse">
+                                        ⏳ Đang chờ thanh toán...
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <ul class="list-group list-group-flush rounded-3 bg-white border p-1 mb-3">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                        <span class="text-secondary small">Ngân hàng:</span>
+                                        <strong class="text-dark" th:text="${vietQr != null and vietQr.bankName != null ? vietQr.bankName : 'Vietcombank (VCB)'}">Vietcombank (VCB)</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                        <span class="text-secondary small">Số tài khoản:</span>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge text-bg-light border fs-6 text-dark" id="copyAccNo"
+                                                th:text="${vietQr != null and vietQr.accountNo != null ? vietQr.accountNo : '9342804412'}">9342804412</span>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2"
+                                                onclick="copyText(document.getElementById('copyAccNo').innerText, 'số tài khoản')">Sao
+                                                chép</button>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                        <span class="text-secondary small">Chủ tài khoản:</span>
+                                        <strong class="text-dark" th:text="${vietQr != null and vietQr.accountName != null ? vietQr.accountName : 'DOAN NGUYEN THANH CONG'}">DOAN NGUYEN THANH CONG</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                        <span class="text-secondary small">Số tiền cần chuyển:</span>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <strong class="text-danger fs-5" id="transferAmountText"
+                                                th:text="${vietQr != null and vietQr.totalAmount != null ? (#numbers.formatDecimal(vietQr.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : (booking.finalAmount != null ? (#numbers.formatDecimal(booking.finalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : '0 ₫')}">150.000 ₫</strong>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2"
+                                                onclick="copyText(window.currentTransferAmount, 'số tiền')">Sao
+                                                chép</button>
+                                        </div>
+                                    </li>
+                                    <li
+                                        class="list-group-item d-flex justify-content-between align-items-center py-2 bg-warning-subtle">
+                                        <span class="text-dark small fw-bold">Nội dung chuyển khoản (bắt buộc):</span>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge text-bg-warning fs-6 text-dark" id="copyContent"
+                                                th:text="${booking != null ? booking.bookingCode : 'PB'}">PB...</span>
+                                            <button type="button" class="btn btn-sm btn-dark py-0 px-2"
+                                                onclick="copyText(document.getElementById('copyContent').innerText, 'nội dung chuyển khoản')">Sao
+                                                chép</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <div class="alert alert-light border small py-2 mb-0">
+                                    💡 <em>Ghi đúng nội dung <strong><span
+                                                th:text="${booking != null ? booking.bookingCode : ''}"></span></strong> để hệ thống tự động
+                                        gạch nợ và đối soát trong vòng 1-3 phút.</em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integration & Sharing Buttons (YouCanBook.me features) -->
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                        <!-- Add to Google Calendar button -->
+                        <button class="btn btn-outline-primary" type="button" onclick="addToGoogleCalendar()">
+                            📅 Thêm vào Google Calendar
+                        </button>
+
+                        <!-- Copy invite info to share with friends -->
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyInviteInfo()">
+                            📋 Sao chép lịch gửi bạn chơi
+                        </button>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a class="btn btn-pb" th:href="@{/lich-cua-toi}">Xem tất cả lịch của tôi</a>
+                        <a class="btn btn-pb-ghost" th:href="@{/san}">Đặt thêm sân khác</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar Sync & Share Script -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const bookingData = {
+                code: /*[[${booking != null ? booking.bookingCode : ''}]]*/ 'PB',
+                courtName: /*[[${booking != null and booking.court != null ? booking.court.name : 'Sân Pickleball'}]]*/ 'Sân Pickleball',
+                branchAddress: /*[[${booking != null and booking.court != null and booking.court.branch != null ? booking.court.branch.address : ''}]]*/ '',
+                startUtc: /*[[${booking != null and booking.startAt != null ? (#temporals.format(booking.startAt, 'yyyyMMdd') + 'T' + #temporals.format(booking.startAt, 'HHmmss')) : ''}]]*/ '',
+                endUtc: /*[[${booking != null and booking.endAt != null ? (#temporals.format(booking.endAt, 'yyyyMMdd') + 'T' + #temporals.format(booking.endAt, 'HHmmss')) : ''}]]*/ '',
+                displayTime: /*[[${booking != null and booking.startAt != null and booking.endAt != null ? (#temporals.format(booking.startAt, 'HH:mm') + ' - ' + #temporals.format(booking.endAt, 'HH:mm dd/MM/yyyy')) : ''}]]*/ '',
+                fullQrUrl: /*[[${vietQr != null and vietQr.fullQrUrl != null ? vietQr.fullQrUrl : ''}]]*/ '',
+                depositQrUrl: /*[[${vietQr != null and vietQr.depositQrUrl != null ? vietQr.depositQrUrl : ''}]]*/ '',
+                totalAmount: /*[[${vietQr != null and vietQr.totalAmount != null ? vietQr.totalAmount : (booking != null and booking.finalAmount != null ? booking.finalAmount : 0)}]]*/ 0,
+                depositAmount: /*[[${vietQr != null and vietQr.depositAmount != null ? vietQr.depositAmount : 0}]]*/ 0
+            };
+
+            window.currentTransferAmount = bookingData.totalAmount ? bookingData.totalAmount.toString() : '';
+
+            function copyText(text, label) {
+                if (!text) return;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Đã sao chép ' + label + ': ' + text);
+                }).catch(() => {
+                    prompt('Vui lòng sao chép:', text);
+                });
+            }
+
+            function switchQrMode(mode) {
+                const img = document.getElementById('vietQrImg');
+                const btnFull = document.getElementById('btnPayFull');
+                const btnDeposit = document.getElementById('btnPayDeposit');
+                const amountText = document.getElementById('transferAmountText');
+
+                if (mode === 'deposit') {
+                    if (img && bookingData.depositQrUrl) img.src = bookingData.depositQrUrl;
+                    if (btnDeposit) {
+                        btnDeposit.classList.add('btn-success', 'active');
+                        btnDeposit.classList.remove('btn-outline-success');
+                    }
+                    if (btnFull) {
+                        btnFull.classList.remove('btn-success', 'active');
+                        btnFull.classList.add('btn-outline-success');
+                    }
+                    if (amountText) amountText.textContent = Number(bookingData.depositAmount).toLocaleString('vi-VN') + ' ₫';
+                    window.currentTransferAmount = bookingData.depositAmount ? bookingData.depositAmount.toString() : '';
+                } else {
+                    if (img && bookingData.fullQrUrl) img.src = bookingData.fullQrUrl;
+                    if (btnFull) {
+                        btnFull.classList.add('btn-success', 'active');
+                        btnFull.classList.remove('btn-outline-success');
+                    }
+                    if (btnDeposit) {
+                        btnDeposit.classList.remove('btn-success', 'active');
+                        btnDeposit.classList.add('btn-outline-success');
+                    }
+                    if (amountText) amountText.textContent = Number(bookingData.totalAmount).toLocaleString('vi-VN') + ' ₫';
+                    window.currentTransferAmount = bookingData.totalAmount ? bookingData.totalAmount.toString() : '';
+                }
+            }
+
+            // Polling kiểm tra trạng thái thanh toán tự động
+            let pollInterval = setInterval(() => {
+                if (!bookingData.code) return;
+                fetch('/api/bookings/' + bookingData.code + '/payment-status')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.isPaid) {
+                            clearInterval(pollInterval);
+                            const statusDiv = document.getElementById('paymentLiveStatus');
+                            if (statusDiv) {
+                                statusDiv.innerHTML = '<span class="badge text-bg-success fs-6 px-3 py-2">✓ Đã nhận thanh toán thành công!</span>';
+                            }
+                        }
+                    })
+                    .catch(() => { });
+            }, 4000);
+
+            function addToGoogleCalendar() {
+                const title = encodeURIComponent('Chơi Pickleball tại ' + (bookingData.courtName || 'PickleBook'));
+                const location = encodeURIComponent(bookingData.branchAddress || '');
+                const details = encodeURIComponent('Mã đặt sân: ' + bookingData.code + '\nVui lòng đến sân trước 10 phút.');
+
+                const gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + title + '&dates=' + bookingData.startUtc + '/' + bookingData.endUtc + '&details=' + details + '&location=' + location;
+                window.open(gcalUrl, '_blank');
+            }
+
+            function copyInviteInfo() {
+                const text = '🏸 LỊCH THI ĐẤU PICKLEBALL 🏸\n- Sân: ' + bookingData.courtName + '\n- Địa chỉ: ' + (bookingData.branchAddress || 'Xem tại PickleBook') + '\n- Thời gian: ' + bookingData.displayTime + '\n- Mã vé: ' + bookingData.code + '\nHẹn gặp mọi người đúng giờ nhé!';
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Đã sao chép thông tin trận đấu vào clipboard! Bạn có thể dán vào nhóm Zalo / Messenger để chia sẻ với đồng đội.');
+                });
+            }
+            /*]]>*/
+        </script>
+    </main>
+</body>
+
+</html>

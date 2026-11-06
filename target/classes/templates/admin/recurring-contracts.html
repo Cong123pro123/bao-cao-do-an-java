@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Quản lý hợp đồng cố định', ~{::main})}">
+<head>
+    <title>Quản lý hợp đồng cố định - PickleBook</title>
+</head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="eyebrow">Quản trị</span>
+                <h1 class="h2 mb-0">Hợp đồng đặt cố định theo tháng</h1>
+            </div>
+            <a class="btn btn-pb" th:href="@{/dat-co-dinh}" target="_blank">＋ Tạo hợp đồng mới</a>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <section class="panel shadow-sm border">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã HĐ</th>
+                            <th>Khách hàng</th>
+                            <th>Sân</th>
+                            <th>Lịch trong tuần</th>
+                            <th>Thời hạn</th>
+                            <th>Số buổi</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${contracts}">
+                            <td>
+                                <a class="fw-bold text-success" th:href="@{/admin/recurring/{id}(id=${c.id})}" th:text="${c.contractCode}">CD...</a>
+                            </td>
+                            <td>
+                                <strong class="d-block" th:text="${c.customerName}">Khách</strong>
+                                <small class="text-secondary" th:text="${c.customerPhone}">SĐT</small>
+                            </td>
+                            <td th:text="${c.court.name}">Sân 1</td>
+                            <td>
+                                <span class="badge text-bg-light border" th:text="${c.daysOfWeek}">MONDAY,WEDNESDAY</span>
+                                <small class="d-block text-secondary" th:text="${#temporals.format(c.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(c.endTime, 'HH:mm')}">18:00 - 20:00</small>
+                            </td>
+                            <td th:text="${#temporals.format(c.startDate, 'dd/MM')} + ' - ' + ${#temporals.format(c.endDate, 'dd/MM/yyyy')}">Tháng 11</td>
+                            <td class="fw-bold" th:text="${c.totalSessions} + ' buổi'">12 buổi</td>
+                            <td>
+                                <strong class="text-success" th:text="${#numbers.formatDecimal(c.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">3.600.000 ₫</strong>
+                                <small class="d-block text-muted" th:text="'Cọc: ' + ${#numbers.formatDecimal(c.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">Cọc</small>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${c.status.name() == 'APPROVED' ? 'text-bg-success' : (c.status.name() == 'PENDING' ? 'text-bg-warning' : 'text-bg-secondary')}"
+                                      th:text="${c.status.label}">Chờ duyệt</span>
+                            </td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/recurring/{id}(id=${c.id})}">Chi tiết</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(contracts)}">
+                            <td colspan="9" class="text-center text-secondary py-4">Chưa có hợp đồng đặt cố định nào.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>
+

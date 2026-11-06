@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, content)">
+<head th:replace="~{fragments/head :: head(${title})}"></head>
+<body class="site-body">
+<a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<header th:replace="~{fragments/header :: header}"></header>
+<div class="container">
+    <div th:replace="~{fragments/flash :: flash}"></div>
+</div>
+<div id="main-content">
+    <div th:replace="${content}"></div>
+</div>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

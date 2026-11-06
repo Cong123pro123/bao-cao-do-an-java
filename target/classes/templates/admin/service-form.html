@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Thông tin dịch vụ', ~{::main})}">
+<head><title>Thông tin dịch vụ</title></head>
+<body>
+<main class="section">
+    <div class="container" style="max-width: 800px">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="mb-4">
+            <span class="eyebrow">Quản trị · Tiện ích &amp; Đội ngũ</span>
+            <h1 class="h2" th:text="${serviceId == null ? 'Thêm dịch vụ / HLV mới' : 'Cập nhật dịch vụ'}">Thông tin dịch vụ</h1>
+            <p class="text-secondary mb-0">Dịch vụ này sẽ hiển thị để khách chọn khi đặt sân online.</p>
+        </div>
+
+        <form class="panel" th:object="${serviceForm}"
+              th:action="${serviceId == null ? '/admin/services' : '/admin/services/' + serviceId}" method="post">
+            <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+                <p class="mb-1" th:each="error : ${#fields.globalErrors()}" th:text="${error}">Lỗi dữ liệu.</p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label" for="name">Tên dịch vụ / Gói Huấn luyện viên</label>
+                    <input class="form-control" id="name" th:field="*{name}" maxlength="120"
+                           placeholder="Ví dụ: Huấn luyện viên 1-1, Thuê vợt thi đấu cao cấp" required>
+                    <div class="invalid-feedback d-block" th:errors="*{name}"></div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="price">Đơn giá (VNĐ)</label>
+                    <input class="form-control" id="price" type="number" min="0" step="1000" th:field="*{price}" required>
+                    <div class="invalid-feedback d-block" th:errors="*{price}"></div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="unit">Đơn vị tính</label>
+                    <input class="form-control" id="unit" th:field="*{unit}" maxlength="40"
+                           placeholder="Ví dụ: giờ, cây/lần, ống, trận" required>
+                    <div class="form-text">Ví dụ: giờ/người đối với HLV, cây/lần đối với vợt.</div>
+                    <div class="invalid-feedback d-block" th:errors="*{unit}"></div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="sortOrder">Thứ tự hiển thị</label>
+                    <input class="form-control" id="sortOrder" type="number" min="0" th:field="*{sortOrder}">
+                    <div class="form-text">Số nhỏ hơn sẽ hiển thị trước.</div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label" for="description">Mô tả chi tiết</label>
+                    <textarea class="form-control" id="description" rows="3" th:field="*{description}" maxlength="255"
+                              placeholder="Mô tả kỹ năng HLV, thông số dụng cụ hoặc lưu ý cho khách hàng..."></textarea>
+                    <div class="invalid-feedback d-block" th:errors="*{description}"></div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="active" th:field="*{active}">
+                        <label class="form-check-label" for="active">
+                            Kích hoạt dịch vụ này ngay (cho phép khách lựa chọn khi đặt sân)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                <button class="btn btn-pb" type="submit">Lưu dịch vụ</button>
+                <a class="btn btn-pb-ghost" th:href="@{/admin/services}">Hủy</a>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>
+

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Chính sách & quy định', ~{::main})}">
+<head><title>Chính sách &amp; quy định</title></head>
+<body>
+<main>
+    <section class="page-hero">
+        <div class="container">
+            <span class="eyebrow">Minh bạch trước khi đặt</span>
+            <h1>Chính sách &amp; quy định sân</h1>
+            <p>Những điều bạn cần biết về hủy lịch, đổi lịch, tiền cọc và nội quy khi đến sân.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="panel mb-4">
+                        <h2 class="panel-title">Chính sách hủy &amp; đổi lịch</h2>
+                        <div class="policy-facts">
+                            <div class="fact">
+                                <strong th:text="${cancelBeforeHours + ' giờ'}">12 giờ</strong>
+                                <span>Hủy miễn phí trước giờ chơi</span>
+                            </div>
+                            <div class="fact">
+                                <strong th:text="${rescheduleBeforeHours + ' giờ'}">12 giờ</strong>
+                                <span>Đổi lịch trước giờ chơi</span>
+                            </div>
+                            <div class="fact">
+                                <strong th:text="${depositPercent + '%'}">30%</strong>
+                                <span>Tiền cọc giữ chỗ</span>
+                            </div>
+                            <div class="fact">
+                                <strong th:text="${reminderHours + ' giờ'}">3 giờ</strong>
+                                <span>Nhắc lịch qua email</span>
+                            </div>
+                        </div>
+                        <div class="policy-content" th:utext="${cancelPolicy}">
+                            <p>Quý khách được hủy hoặc đổi lịch miễn phí trước giờ chơi ít nhất 12 giờ.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2 class="panel-title">Nội quy tại sân</h2>
+                        <div class="policy-content" th:utext="${rules}">
+                            <ul>
+                                <li>Vui lòng có mặt trước giờ chơi 10 phút.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="panel panel-soft sticky-side">
+                        <h3 class="panel-title-sm">Cần hỗ trợ?</h3>
+                        <p class="text-muted-2">Nếu có thắc mắc về đơn đặt sân, hãy liên hệ hotline hoặc email của chúng tôi.</p>
+                        <ul class="contact-list">
+                            <li>
+                                <span>Hotline</span>
+                                <strong th:text="${site != null and site['site.phone'] != null ? site['site.phone'] : '0909 123 456'}">0909 123 456</strong>
+                            </li>
+                            <li>
+                                <span>Email</span>
+                                <strong th:text="${site != null and site['site.email'] != null ? site['site.email'] : 'hotline@picklebook.vn'}">hotline@picklebook.vn</strong>
+                            </li>
+                            <li>
+                                <span>Giờ làm việc</span>
+                                <strong th:text="${site != null and site['site.open_hours'] != null ? site['site.open_hours'] : '06:00 - 22:00 hằng ngày'}">06:00 - 22:00</strong>
+                            </li>
+                        </ul>
+                        <a th:href="@{/dang-ky}" class="btn btn-pb w-100 mt-3">Đặt sân ngay</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

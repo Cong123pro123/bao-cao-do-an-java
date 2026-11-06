@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer th:fragment="footer" class="site-footer">
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-4">
+                <a class="footer-brand" th:href="@{/}">
+                    <img th:src="@{/img/logo.svg}" alt="" width="40" height="40">
+                    <span>PickleBook</span>
+                </a>
+                <p class="footer-about"
+                   th:text="${site != null and site['footer.about'] != null
+                        ? site['footer.about']
+                        : 'PickleBook mang đến trải nghiệm đặt sân pickleball hiện đại, minh bạch và tiện lợi.'}">
+                    PickleBook mang đến trải nghiệm đặt sân pickleball hiện đại.
+                </p>
+                <div class="footer-social">
+                    <a th:if="${site != null and site['site.facebook'] != null}" th:href="${site['site.facebook']}"
+                       target="_blank" rel="noopener noreferrer">Facebook</a>
+                    <a th:if="${site != null and site['site.instagram'] != null}" th:href="${site['site.instagram']}"
+                       target="_blank" rel="noopener noreferrer">Instagram</a>
+                    <a th:if="${site != null and site['site.youtube'] != null}" th:href="${site['site.youtube']}"
+                       target="_blank" rel="noopener noreferrer">YouTube</a>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-2">
+                <h3 class="footer-title">Khám phá</h3>
+                <ul class="footer-links">
+                    <li><a th:href="@{/}">Trang chủ</a></li>
+                    <li><a th:href="@{/gioi-thieu}">Giới thiệu</a></li>
+                    <li><a th:href="@{/chinh-sach}">Chính sách &amp; quy định</a></li>
+                    <li><a th:href="@{/dang-ky}">Tạo tài khoản</a></li>
+                </ul>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <h3 class="footer-title">Liên hệ</h3>
+                <ul class="footer-contact">
+                    <li>
+                        <span class="footer-contact-label">Địa chỉ</span>
+                        <span th:text="${site != null and site['site.address'] != null
+                                ? site['site.address'] : '128 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh'}">
+                            Địa chỉ
+                        </span>
+                    </li>
+                    <li>
+                        <span class="footer-contact-label">Hotline</span>
+                        <a th:href="'tel:' + ${site != null and site['site.phone'] != null ? site['site.phone'] : '0909123456'}"
+                           th:text="${site != null and site['site.phone'] != null ? site['site.phone'] : '0909 123 456'}">
+                            0909 123 456
+                        </a>
+                    </li>
+                    <li>
+                        <span class="footer-contact-label">Email</span>
+                        <a th:href="'mailto:' + ${site != null and site['site.email'] != null ? site['site.email'] : 'hotline@picklebook.vn'}"
+                           th:text="${site != null and site['site.email'] != null ? site['site.email'] : 'hotline@picklebook.vn'}">
+                            hotline@picklebook.vn
+                        </a>
+                    </li>
+                    <li>
+                        <span class="footer-contact-label">Giờ mở cửa</span>
+                        <span th:text="${site != null and site['site.open_hours'] != null
+                                ? site['site.open_hours'] : '06:00 - 22:00 hằng ngày'}">06:00 - 22:00</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="footer-cta">
+                    <span class="footer-cta-eyebrow">Sẵn sàng vào sân?</span>
+                    <p>Tạo tài khoản miễn phí và giữ khung giờ đẹp nhất trong ngày.</p>
+                    <a th:href="@{/dang-ky}" class="btn btn-lime w-100">Bắt đầu ngay</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <span>© <span th:text="${currentYear}">2026</span> PickleBook. Giao diện tự thiết kế cho cộng đồng pickleball Việt Nam.</span>
+            <span class="footer-bottom-links">
+                <a th:href="@{/chinh-sach}">Chính sách hủy sân</a>
+                <a th:href="@{/gioi-thieu}">Về chúng tôi</a>
+            </span>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

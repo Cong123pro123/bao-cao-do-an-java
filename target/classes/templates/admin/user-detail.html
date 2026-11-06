@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Chi tiết người dùng', ~{::main})}">
+<head><title>Chi tiết người dùng</title></head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div><span class="eyebrow">Quản trị · Người dùng</span><h1 class="h2 mb-0" th:text="${user.fullName}">Tên người dùng</h1></div>
+            <a class="btn btn-pb-ghost" th:href="@{/admin/users/{id}/edit(id=${user.id})}">Chỉnh sửa</a>
+        </div>
+        <div th:replace="~{fragments/flash :: flash}"></div>
+        <section class="panel mb-4">
+            <div class="row g-3">
+                <div class="col-md-6"><span class="text-secondary d-block">Email</span><strong th:text="${user.email}">email</strong></div>
+                <div class="col-md-6"><span class="text-secondary d-block">Điện thoại</span><strong th:text="${user.phone ?: '—'}">—</strong></div>
+                <div class="col-md-4"><span class="text-secondary d-block">Vai trò</span><strong th:text="${user.roleLabel}">Khách hàng</strong></div>
+                <div class="col-md-4"><span class="text-secondary d-block">Trạng thái</span><strong th:text="${user.statusLabel}">Đang hoạt động</strong></div>
+                <div class="col-md-4"><span class="text-secondary d-block">Lần đăng nhập gần nhất</span><strong th:text="${user.lastLoginAtLabel}">Chưa đăng nhập</strong></div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <form th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post">
+                    <input type="hidden" name="status" th:value="${user.status.name() == 'ACTIVE' ? 'LOCKED' : 'ACTIVE'}">
+                    <button class="btn btn-outline-warning" type="submit" th:text="${user.status.name() == 'ACTIVE' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}">Khóa</button>
+                </form>
+                <form th:action="@{/admin/users/{id}/reset-password(id=${user.id})}" method="post">
+                    <button class="btn btn-outline-danger" type="submit" onclick="return confirm('Tạo mật khẩu tạm thời mới cho tài khoản này?')">Đặt lại mật khẩu</button>
+                </form>
+            </div>
+            <div class="alert alert-warning mt-3 mb-0" th:if="${temporaryPassword}">
+                Mật khẩu tạm thời (chỉ hiển thị lần này): <code th:text="${temporaryPassword}"></code>
+            </div>
+        </section>
+        <section class="panel">
+            <h2 class="h4 mb-3">Lịch sử đặt sân</h2>
+            <div class="table-responsive" th:if="${!#lists.isEmpty(bookings)}">
+                <table class="table align-middle mb-0"><thead><tr><th>Mã đơn</th><th>Sân</th><th>Thời gian</th><th>Trạng thái</th><th>Tổng tiền</th></tr></thead>
+                    <tbody><tr th:each="booking : ${bookings}">
+                        <td th:text="${booking.bookingCode}">PB</td><td th:text="${booking.court.name}">Sân</td>
+                        <td th:text="${#temporals.format(booking.startAt, 'dd/MM/yyyy HH:mm')}">Ngày</td>
+                        <td th:text="${booking.status.label}">Trạng thái</td>
+                        <td th:text="${#numbers.formatDecimal(booking.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                    </tr></tbody>
+                </table>
+            </div>
+            <p class="text-secondary mb-0" th:if="${#lists.isEmpty(bookings)}">Người dùng chưa có lịch đặt.</p>
+        </section>
+    </div>
+</main>
+</body>
+</html>

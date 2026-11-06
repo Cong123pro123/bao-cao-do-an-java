@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Không có quyền truy cập', ~{::main})}">
+<head><title>Không có quyền truy cập</title></head>
+<body>
+<main>
+    <section class="error-page">
+        <div class="container">
+            <div class="error-card">
+                <span class="error-code" th:text="${status != null ? status : 403}">403</span>
+                <span class="eyebrow">Truy cập bị từ chối</span>
+                <h1>Bạn không có quyền truy cập trang này</h1>
+                <p th:text="${message != null ? message : 'Tài khoản của bạn không được phép sử dụng chức năng này.'}">
+                    Tài khoản của bạn không được phép sử dụng chức năng này.
+                </p>
+                <div class="error-actions">
+                    <a th:href="@{/}" class="btn btn-pb">Về trang chủ</a>
+                    <a th:href="@{/tai-khoan}" class="btn btn-pb-ghost">Tài khoản của tôi</a>
+                </div>
+                <p class="error-help">
+                    Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ hotline
+                    <strong th:text="${site != null and site['site.phone'] != null ? site['site.phone'] : '0909 123 456'}">0909 123 456</strong>.
+                </p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

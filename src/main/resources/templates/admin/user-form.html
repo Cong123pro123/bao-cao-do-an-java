@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Thông tin người dùng', ~{::main})}">
+<head><title>Thông tin người dùng</title></head>
+<body>
+<main class="section">
+    <div class="container" style="max-width: 760px">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+        <div class="mb-4"><span class="eyebrow">Quản trị · Người dùng</span><h1 class="h2" th:text="${userId == null ? 'Thêm người dùng' : 'Cập nhật người dùng'}">Người dùng</h1></div>
+        <div th:replace="~{fragments/flash :: flash}"></div>
+        <form class="panel" th:object="${userForm}" th:action="${userId == null ? '/admin/users' : '/admin/users/' + userId}" method="post">
+            <div class="mb-3"><label class="form-label" for="fullName">Họ tên</label><input id="fullName" class="form-control" th:field="*{fullName}" required><div class="invalid-feedback d-block" th:errors="*{fullName}"></div></div>
+            <div class="mb-3"><label class="form-label" for="email">Email</label><input id="email" class="form-control" type="email" th:field="*{email}" required><div class="invalid-feedback d-block" th:errors="*{email}"></div></div>
+            <div class="mb-3"><label class="form-label" for="phone">Số điện thoại</label><input id="phone" class="form-control" th:field="*{phone}"><div class="invalid-feedback d-block" th:errors="*{phone}"></div></div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6"><label class="form-label" for="role">Vai trò</label><select id="role" class="form-select" th:field="*{role}"><option th:each="item : ${roles}" th:value="${item}" th:text="${item.label}"></option></select></div>
+                <div class="col-md-6"><label class="form-label" for="status">Trạng thái</label><select id="status" class="form-select" th:field="*{status}"><option th:each="item : ${statuses}" th:value="${item}" th:text="${item.label}"></option></select></div>
+            </div>
+            <div class="mb-4" th:if="${userId == null}"><label class="form-label" for="password">Mật khẩu tạm thời</label><input id="password" class="form-control" type="password" th:field="*{password}" minlength="8" autocomplete="new-password" required><div class="form-text">Mật khẩu cần có ít nhất 8 ký tự.</div><div class="invalid-feedback d-block" th:errors="*{password}"></div></div>
+            <div class="d-flex gap-2"><button class="btn btn-pb" type="submit">Lưu</button><a class="btn btn-pb-ghost" th:href="@{/admin/users}">Quay lại</a></div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

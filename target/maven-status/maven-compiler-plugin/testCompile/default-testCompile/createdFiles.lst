@@ -1,0 +1,5 @@
+com\picklebook\controller\web\PublicPagesSmokeTest.class
+com\picklebook\controller\web\EmptyDatabasePublicPagesSmokeTest.class
+com\picklebook\service\impl\AdminOperationsServiceImplTest.class
+com\picklebook\service\impl\CourtBookingServiceImplTest.class
+com\picklebook\controller\admin\AdminPagesIntegrationTest.class

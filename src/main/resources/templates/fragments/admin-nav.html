@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="adminNav" class="mb-4" aria-label="Menu quản trị nhanh">
+    <div class="d-flex flex-wrap gap-2 pb-2 border-bottom">
+        <a class="btn btn-sm"
+           th:classappend="${currentPath == '/admin/dashboard' or currentPath == '/admin' ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/dashboard}">
+            📊 Tổng quan
+        </a>
+        <a class="btn btn-sm"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/timeline') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/timeline}">
+            📅 Lịch trực quan (Timeline)
+        </a>
+        <a class="btn btn-sm"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/bookings') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/bookings}">
+            📝 Quản lý đơn đặt
+        </a>
+        <a class="btn btn-sm"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/recurring') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/recurring}">
+            🔄 Hợp đồng cố định
+        </a>
+        <a class="btn btn-sm" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/courts') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/courts}">
+            🏸 Sân &amp; Giờ mở cửa
+        </a>
+        <a class="btn btn-sm" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/pricing') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/pricing}">
+            💰 Bảng giá &amp; Giờ vàng
+        </a>
+        <a class="btn btn-sm" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/blocked-times') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/blocked-times}">
+            ⛔ Chặn lịch &amp; Bảo trì
+        </a>
+        <a class="btn btn-sm" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/services') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/services}">
+            🏓 Dịch vụ &amp; HLV
+        </a>
+        <a class="btn btn-sm" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${currentPath != null and currentPath.startsWith('/admin/users') ? 'btn-pb' : 'btn-pb-ghost'}"
+           th:href="@{/admin/users}">
+            👥 Người dùng
+        </a>
+    </div>
+</nav>
+</body>
+</html>
+

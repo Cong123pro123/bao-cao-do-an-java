@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/auth :: auth('Đăng ký', ~{::main})}">
+<head><title>Đăng ký</title></head>
+<body>
+<main>
+    <div class="auth-head">
+        <span class="eyebrow">Bắt đầu miễn phí</span>
+        <h2>Tạo tài khoản</h2>
+        <p>Chỉ mất một phút để có thể đặt sân và quản lý lịch chơi.</p>
+    </div>
+
+    <form th:action="@{/dang-ky}" th:object="${registerRequest}" method="post" class="auth-form" novalidate>
+        <div class="mb-3">
+            <label class="form-label" for="fullName">Họ và tên</label>
+            <input type="text" class="form-control" id="fullName" th:field="*{fullName}"
+                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'"
+                   placeholder="Nguyễn Văn A" autocomplete="name" required>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" class="form-control" id="email" th:field="*{email}"
+                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                   placeholder="ban@example.com" autocomplete="email" required>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="phone">Số điện thoại</label>
+            <input type="tel" class="form-control" id="phone" th:field="*{phone}"
+                   th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                   placeholder="0909 123 456" autocomplete="tel" required>
+            <div class="form-text">Dùng để liên hệ khi cần thiết, bắt đầu bằng 0 và gồm 10–11 chữ số.</div>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-sm-6">
+                <label class="form-label" for="password">Mật khẩu</label>
+                <div class="password-field">
+                    <input type="password" class="form-control" id="password" th:field="*{password}"
+                           th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                           placeholder="Tối thiểu 8 ký tự" autocomplete="new-password" required>
+                    <button type="button" class="password-toggle" data-toggle-password="#password"
+                            aria-label="Hiện hoặc ẩn mật khẩu">Hiện</button>
+                </div>
+                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            </div>
+            <div class="col-sm-6">
+                <label class="form-label" for="confirmPassword">Xác nhận mật khẩu</label>
+                <div class="password-field">
+                    <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}"
+                           th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                           placeholder="Nhập lại mật khẩu" autocomplete="new-password" required>
+                    <button type="button" class="password-toggle" data-toggle-password="#confirmPassword"
+                            aria-label="Hiện hoặc ẩn mật khẩu">Hiện</button>
+                </div>
+                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+            </div>
+        </div>
+
+        <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+            <label class="form-check-label" for="terms">
+                Tôi đồng ý với <a th:href="@{/chinh-sach}" class="link-subtle">quy định và chính sách</a> của sân.
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-pb w-100 btn-lg-pb mt-3">Tạo tài khoản</button>
+    </form>
+
+    <p class="auth-switch">Đã có tài khoản? <a th:href="@{/dang-nhap}">Đăng nhập</a></p>
+</main>
+</body>
+</html>

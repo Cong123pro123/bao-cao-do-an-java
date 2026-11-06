@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Lịch đặt của tôi', ~{::main})}">
+<head><title>Lịch đặt của tôi</title></head>
+<body>
+<main>
+    <section class="page-hero page-hero-compact">
+        <div class="container"><span class="eyebrow">Tài khoản</span><h1>Lịch đặt của tôi</h1></div>
+    </section>
+    <section class="section section-tight">
+        <div class="container">
+            <div class="row g-3" th:if="${!#lists.isEmpty(bookings)}">
+                <div class="col-12" th:each="booking : ${bookings}">
+                    <a class="panel d-flex flex-wrap justify-content-between align-items-center gap-3 text-decoration-none"
+                       th:href="@{/lich-cua-toi/{id}(id=${booking.id})}">
+                        <div>
+                            <span class="badge text-bg-light" th:text="${booking.status.label}">Chờ xác nhận</span>
+                            <h2 class="h5 mt-2 mb-1" th:text="${booking.court.name}">Tên sân</h2>
+                            <span class="text-secondary" th:text="${#temporals.format(booking.startAt, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#temporals.format(booking.endAt, 'HH:mm')}">Thời gian</span>
+                        </div>
+                        <div class="text-end">
+                            <strong class="d-block" th:text="${booking.bookingCode}">PB</strong>
+                            <span th:text="${#numbers.formatDecimal(booking.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="panel text-center" th:if="${#lists.isEmpty(bookings)}">
+                <h2 class="h4">Bạn chưa có lịch đặt</h2>
+                <a class="btn btn-pb" th:href="@{/san}">Chọn sân</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/main :: layout(${court.name}, ~{::main})}">
+
+<head>
+    <title>Chi tiết sân</title>
+</head>
+
+<body>
+    <main>
+        <section class="page-hero">
+            <div class="container">
+                <nav class="breadcrumb-pb" aria-label="breadcrumb">
+                    <a th:href="@{/}">Trang chủ</a><span>/</span><a th:href="@{/san}">Sân</a>
+                </nav>
+                <span class="eyebrow" th:text="${court.courtType.label}">Trong nhà</span>
+                <h1 class="hero-title mb-2" th:text="${court.name}">Tên sân</h1>
+                <p class="hero-sub mb-3" th:text="${court.description}">Mô tả sân</p>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <span class="badge text-bg-light border px-3 py-2">
+                        📍 <strong th:text="${court.branch.name}">Cơ sở</strong>: <span
+                            th:text="${court.branch.address}">Địa chỉ</span>
+                    </span>
+                    <span class="badge text-bg-success px-3 py-2 fs-6">
+                        ⚡ Giá từ <strong
+                            th:text="${#numbers.formatDecimal(court.basePrice, 0, 'COMMA', 0, 'POINT')} + ' ₫/giờ'">150.000
+                            ₫/giờ</strong>
+                    </span>
+                    <span class="badge text-bg-info px-3 py-2"
+                        th:if="${court.amenities != null and !court.amenities.isBlank()}">
+                        ✨ Tiện ích: <span th:text="${court.amenities}">Vợt, bóng, bãi xe</span>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-tight">
+            <div class="container">
+                <!-- Court Photos Showcase -->
+                <section class="panel mb-4 p-0 overflow-hidden" th:if="${!#lists.isEmpty(court.images)}">
+                    <div class="row g-2 p-2">
+                        <div th:class="${#lists.size(court.images) > 1 ? 'col-12 col-md-8' : 'col-12'}">
+                            <img th:src="${court.images[0].imageUrl}" th:alt="${court.images[0].altText ?: court.name}"
+                                class="w-100 rounded-3 shadow-sm" style="height: 320px; object-fit: cover;">
+                        </div>
+                        <div class="col-12 col-md-4 d-flex flex-column gap-2" th:if="${#lists.size(court.images) > 1}">
+                            <div th:each="img, iterStat : ${court.images}"
+                                th:if="${iterStat.index >= 1 and iterStat.index <= 2}" class="h-50">
+                                <img th:src="${img.imageUrl}" th:alt="${img.altText ?: court.name}"
+                                    class="w-100 h-100 rounded-3 shadow-sm"
+                                    style="min-height: 155px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Opening Hours Panel -->
+                <section class="panel mb-4" aria-labelledby="opening-hours-title">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0" id="opening-hours-title">🕒 Khung giờ mở cửa trong tuần</h2>
+                        <span class="text-secondary small">Mỗi ca <strong th:text="${court.slotMinutes}">60</strong>
+                            phút</span>
+                    </div>
+                    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-7 g-2 text-center">
+                        <div class="col" th:each="schedule : ${schedules}">
+                            <div class="p-2 rounded border bg-light">
+                                <span class="d-block fw-bold small"
+                                    th:text="${schedule.dayOfWeek == 1 ? 'Thứ 2' : schedule.dayOfWeek == 2 ? 'Thứ 3' : schedule.dayOfWeek == 3 ? 'Thứ 4' : schedule.dayOfWeek == 4 ? 'Thứ 5' : schedule.dayOfWeek == 5 ? 'Thứ 6' : schedule.dayOfWeek == 6 ? 'Thứ 7' : 'Chủ nhật'}">Thứ
+                                    2</span>
+                                <span class="badge text-bg-danger mt-1" th:if="${schedule.closed}">Đóng cửa</span>
+                                <span class="text-success small fw-semibold mt-1 d-block" th:unless="${schedule.closed}"
+                                    th:text="${#temporals.format(schedule.openTime, 'HH:mm') + ' - ' + #temporals.format(schedule.closeTime, 'HH:mm')}">06:00
+                                    - 22:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Banner Đặt cố định theo tháng -->
+                <div
+                    class="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 mb-4 rounded-3 shadow-sm border-info bg-light">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fs-3">🔄</span>
+                        <div>
+                            <strong class="d-block text-dark">Chơi cố định hàng tuần? Đặt lịch cố định trong tháng (Giảm
+                                đến 10%)</strong>
+                            <small class="text-secondary">Giữ khung giờ vàng cố định suốt tháng cho nhóm bạn hoặc công
+                                ty, không lo bị đặt trùng.</small>
+                        </div>
+                    </div>
+                    <a class="btn btn-primary fw-semibold text-nowrap" th:href="@{/dat-co-dinh(courtId=${court.id})}">
+                        📅 Đặt cố định theo tháng ➔
+                    </a>
+                </div>
+
+                <!-- Availability & Booking Panel -->
+                <div class="panel">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                        <div>
+                            <h2 class="h4 mb-1">📅 Chọn ca thi đấu / tập luyện</h2>
+                            <p class="text-secondary mb-0">Hệ thống YouCanBook.me thông minh: kiểm tra thời gian thực,
+                                chống trùng lịch tuyệt đối.</p>
+                        </div>
+                    </div>
+
+                    <!-- Date Picker & Quick Date Chips -->
+                    <form method="get" id="dateFilterForm" class="mb-4">
+                        <label class="form-label fw-semibold" for="date">Chọn ngày chơi:</label>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <input class="form-control" style="max-width: 200px" id="date" type="date" name="date"
+                                th:value="${selectedDate}" onchange="this.form.submit()">
+                            <button class="btn btn-pb-ghost" type="submit">Xem lịch ngày này</button>
+                        </div>
+                    </form>
+
+                    <!-- Slots Booking Form -->
+                    <form th:action="@{/dat-san}" method="get" id="bookingForm">
+                        <input type="hidden" name="courtId" th:value="${court.id}">
+                        <input type="hidden" name="date" th:value="${selectedDate}">
+
+                        <div th:if="${!#lists.isEmpty(availability)}">
+                            <p class="text-secondary small mb-3">
+                                💡 <em>Bạn có thể chọn tối đa <strong th:text="${court.maxSlotsPerBooking}">4</strong>
+                                    khung giờ liên tiếp trong một lượt đặt.</em>
+                            </p>
+
+                            <div class="row g-2 mb-4">
+                                <div class="col-6 col-md-3 col-lg-2" th:each="slot : ${availability}">
+                                    <label class="d-block p-2 text-center rounded-3 border h-100 transition slot-card"
+                                        th:classappend="${slot.available ? 'border-success bg-white cursor-pointer hover-shadow' : (slot.status == 'MAINTENANCE' ? 'bg-body-secondary text-secondary opacity-75' : 'bg-secondary-subtle text-muted opacity-60')}">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <input class="form-check-input slot-checkbox" type="checkbox"
+                                                name="slotStarts" th:value="${#temporals.format(slot.startAt, 'HH:mm')}"
+                                                th:attr="data-price=${slot.price}" th:disabled="${!slot.available}">
+                                            <span class="badge"
+                                                th:classappend="${slot.available ? 'text-bg-success' : (slot.status == 'MAINTENANCE' ? 'text-bg-warning' : 'text-bg-secondary')}"
+                                                th:text="${slot.available ? 'Trống' : (slot.status == 'MAINTENANCE' ? 'Bảo trì' : 'Đã đặt')}">Trống</span>
+                                        </div>
+                                        <strong class="d-block fs-6"
+                                            th:text="${#temporals.format(slot.startAt, 'HH:mm')} + ' - ' + ${#temporals.format(slot.endAt, 'HH:mm')}">06:00
+                                            - 07:00</strong>
+                                        <small class="d-block text-success fw-bold"
+                                            th:text="${#numbers.formatDecimal(slot.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">150.000
+                                            ₫</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center py-4" th:if="${#lists.isEmpty(availability)}">
+                            <p class="text-secondary mb-0">Sân đóng cửa hoặc không có khung giờ nào khả dụng trong ngày
+                                được chọn. Vui lòng chọn ngày khác.</p>
+                        </div>
+
+                        <!-- Interactive Bottom Bar / Summary Sticky -->
+                        <div class="p-3 bg-white rounded-3 border border-success d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4 sticky-bottom shadow-lg"
+                            id="bookingSummaryBar" style="bottom: 15px; z-index: 1000;">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="text-secondary small">Khung giờ đã chọn:</span>
+                                    <strong id="selectedSlotsCount" class="badge text-bg-success fs-6">0 ca</strong>
+                                    <span class="text-muted">|</span>
+                                    <span class="text-secondary small">Tạm tính:</span>
+                                    <strong id="selectedSlotsTotal" class="fs-5 text-success">0 ₫</strong>
+                                </div>
+                                <div id="selectedSlotsChips" class="d-flex flex-wrap gap-1 mt-1">
+                                    <span class="text-muted small fst-italic">Chưa chọn khung giờ nào</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-pb btn-lg px-4 py-2 fw-bold shadow text-nowrap" type="submit"
+                                id="submitBookingBtn" disabled>
+                                ✓ Tiếp tục xác nhận đặt sân ➔
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Client-side dynamic calculator script -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const checkboxes = document.querySelectorAll('.slot-checkbox');
+                const countDisplay = document.getElementById('selectedSlotsCount');
+                const totalDisplay = document.getElementById('selectedSlotsTotal');
+                const chipsDisplay = document.getElementById('selectedSlotsChips');
+                const submitBtn = document.getElementById('submitBookingBtn');
+
+                function updateSummary() {
+                    let count = 0;
+                    let total = 0;
+                    let chipsHtml = '';
+
+                    checkboxes.forEach(cb => {
+                        const card = cb.closest('.slot-card');
+                        if (cb.checked) {
+                            count++;
+                            const price = parseFloat(cb.getAttribute('data-price')) || 0;
+                            total += price;
+                            const labelText = cb.value;
+                            chipsHtml += `<span class="badge bg-success-subtle text-success border border-success px-2 py-1 small">🕒 ${labelText} (${price.toLocaleString('vi-VN')} ₫)</span>`;
+                            if (card) {
+                                card.classList.add('border-2', 'border-success', 'bg-success-subtle');
+                            }
+                        } else {
+                            if (card) {
+                                card.classList.remove('border-2', 'bg-success-subtle');
+                            }
+                        }
+                    });
+
+                    countDisplay.textContent = count + ' ca';
+                    totalDisplay.textContent = total.toLocaleString('vi-VN') + ' ₫';
+                    chipsDisplay.innerHTML = chipsHtml || '<span class="text-muted small fst-italic">Chưa chọn khung giờ nào</span>';
+
+                    if (count > 0) {
+                        submitBtn.removeAttribute('disabled');
+                    } else {
+                        submitBtn.setAttribute('disabled', 'disabled');
+                    }
+                }
+
+                checkboxes.forEach(cb => {
+                    cb.addEventListener('change', updateSummary);
+                });
+                updateSummary();
+            });
+        </script>
+    </main>
+</body>
+
+</html>

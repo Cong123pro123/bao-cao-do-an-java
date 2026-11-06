@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="auth(title, content)">
+<head th:replace="~{fragments/head :: head(${title})}"></head>
+<body class="auth-body">
+<div class="auth-shell">
+    <aside class="auth-brand">
+        <a class="auth-brand-logo" th:href="@{/}">
+            <img th:src="@{/img/logo.svg}" alt="" width="48" height="48">
+            <span>PickleBook</span>
+        </a>
+        <div class="auth-brand-copy">
+            <span class="eyebrow eyebrow-light">Pickleball Arena</span>
+            <h1>Đặt sân.<br>Vào sân.<br><span>Chơi hết mình.</span></h1>
+            <p>Khung giờ trống cập nhật liên tục, giá minh bạch, hủy đổi linh hoạt — tất cả trong một tài khoản.</p>
+            <ul class="auth-benefits">
+                <li>Xem lịch trống theo từng sân và từng ngày</li>
+                <li>Chống đặt trùng ngay ở tầng dữ liệu</li>
+                <li>Nhận email xác nhận và nhắc lịch tự động</li>
+            </ul>
+        </div>
+        <div class="auth-brand-foot">
+            <span>Hotline hỗ trợ</span>
+            <strong th:text="${site != null and site['site.phone'] != null ? site['site.phone'] : '0909 123 456'}">0909 123 456</strong>
+        </div>
+    </aside>
+
+    <section class="auth-panel">
+        <div class="auth-card">
+            <a class="auth-back" th:href="@{/}">← Về trang chủ</a>
+            <div th:replace="~{fragments/flash :: flash}"></div>
+            <div th:replace="${content}"></div>
+        </div>
+        <p class="auth-foot">© <span th:text="${currentYear}">2026</span> PickleBook · Sân chơi đỉnh cao cho cộng đồng pickleball</p>
+    </section>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

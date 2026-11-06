@@ -1,0 +1,22 @@
+# ============================================================
+#  Profile DEV - H2 in-memory, không cần cài MySQL
+#  Dữ liệu được nạp lại mỗi lần khởi động từ db/schema.sql + db/data.sql
+# ============================================================
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/picklebook;MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=VALUE,USER
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+app:
+  mail:
+    enabled: false
+
+logging:
+  level:
+    com.picklebook: DEBUG

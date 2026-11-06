@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Quản lý đơn đặt', ~{::main})}">
+<head><title>Quản lý đơn đặt</title></head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div><span class="eyebrow">Quản trị</span><h1 class="h2 mb-0">Đơn đặt sân</h1></div>
+            <a class="btn btn-pb-ghost"
+               th:href="@{/admin/bookings/export(status=${selectedStatus},courtId=${selectedCourtId},date=${selectedDate},keyword=${keyword})}">Xuất CSV</a>
+        </div>
+        <div th:replace="~{fragments/flash :: flash}"></div>
+        <form class="panel row g-3 align-items-end mb-4" method="get" th:action="@{/admin/bookings}">
+            <div class="col-md-3"><label class="form-label" for="keyword">Mã đơn / khách</label><input id="keyword" class="form-control" name="keyword" th:value="${keyword}"></div>
+            <div class="col-md-2"><label class="form-label" for="date">Ngày</label><input id="date" class="form-control" type="date" name="date" th:value="${selectedDate}"></div>
+            <div class="col-md-3"><label class="form-label" for="court">Sân</label><select id="court" class="form-select" name="courtId"><option value="">Tất cả sân</option><option th:each="court : ${courts}" th:value="${court.id}" th:text="${court.name}" th:selected="${court.id == selectedCourtId}"></option></select></div>
+            <div class="col-md-2"><label class="form-label" for="status">Trạng thái</label><select id="status" class="form-select" name="status"><option value="">Tất cả</option><option th:each="item : ${statuses}" th:value="${item}" th:text="${item.label}" th:selected="${item == selectedStatus}"></option></select></div>
+            <div class="col-md-2 d-grid"><button class="btn btn-pb" type="submit">Lọc đơn</button></div>
+        </form>
+        <section class="panel">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Mã đơn</th><th>Sân / khách</th><th>Thời gian</th><th>Thành tiền</th><th>Trạng thái</th><th>Cập nhật</th></tr></thead>
+                    <tbody>
+                    <tr th:each="booking : ${bookings.content}">
+                        <td><strong th:text="${booking.bookingCode}">PB</strong></td>
+                        <td><span class="d-block" th:text="${booking.court.name}">Sân</span><small th:text="${booking.customerName} + ' · ' + ${booking.customerPhone}">Khách</small></td>
+                        <td th:text="${#temporals.format(booking.startAt, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#temporals.format(booking.endAt, 'HH:mm')}">Thời gian</td>
+                        <td th:text="${#numbers.formatDecimal(booking.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                        <td th:text="${booking.status.label}">Trạng thái</td>
+                        <td>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <form th:if="${booking.status.isActive()}" th:action="@{/admin/bookings/{id}/check-in(id=${booking.id})}" method="post" class="m-0">
+                                    <button class="btn btn-sm btn-success text-nowrap" type="submit" title="Khách đã đến sân - Đánh dấu hoàn thành và thanh toán">
+                                        ✓ Check-in
+                                    </button>
+                                </form>
+                                <form th:if="${booking.status.isActive()}" th:action="@{/admin/bookings/{id}/status(id=${booking.id})}" method="post" class="d-flex gap-1 m-0">
+                                    <select class="form-select form-select-sm" name="status" aria-label="Trạng thái mới">
+                                        <option th:if="${booking.status.name() == 'PENDING'}" value="CONFIRMED">Xác nhận</option>
+                                        <option value="CANCELLED">Hủy</option>
+                                        <option th:if="${booking.status.name() == 'CONFIRMED'}" value="COMPLETED">Hoàn thành</option>
+                                        <option th:if="${booking.status.name() == 'CONFIRMED'}" value="NO_SHOW">Vắng mặt</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-pb" type="submit">Lưu</button>
+                                </form>
+                                <span th:if="${!booking.status.isActive()}" class="badge text-bg-light border">Đã kết thúc</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${bookings.empty}"><td colspan="6" class="text-center text-secondary py-4">Không tìm thấy đơn phù hợp.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:if="${bookings.totalPages > 1}" aria-label="Phân trang đơn đặt">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${bookings.first ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/bookings(page=${bookings.number - 1},status=${selectedStatus},courtId=${selectedCourtId},date=${selectedDate},keyword=${keyword})}">Trước</a></li>
+                    <li class="page-item disabled"><span class="page-link" th:text="${bookings.number + 1} + ' / ' + ${bookings.totalPages}">1 / 1</span></li>
+                    <li class="page-item" th:classappend="${bookings.last ? 'disabled' : ''}"><a class="page-link" th:href="@{/admin/bookings(page=${bookings.number + 1},status=${selectedStatus},courtId=${selectedCourtId},date=${selectedDate},keyword=${keyword})}">Sau</a></li>
+                </ul>
+            </nav>
+        </section>
+    </div>
+</main>
+</body>
+</html>

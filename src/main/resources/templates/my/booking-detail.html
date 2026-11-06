@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Chi tiết đặt sân', ~{::main})}">
+<head><title>Chi tiết đặt sân</title></head>
+<body>
+<main>
+    <section class="section">
+        <div class="container">
+            <div class="panel mx-auto shadow-sm" style="max-width: 800px">
+                <div th:replace="~{fragments/flash :: flash}"></div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 pb-3 border-bottom">
+                    <div>
+                        <span class="eyebrow" th:text="${booking.court.courtType.label}">Ngoài trời</span>
+                        <h1 class="h2 mb-0" th:text="${booking.court.name}">Tên sân</h1>
+                        <small class="text-secondary" th:text="${booking.court.branch != null ? (booking.court.branch.name + ' · ' + booking.court.branch.address) : booking.court.name}">Địa chỉ</small>
+                    </div>
+                    <span class="badge fs-6 px-3 py-2"
+                          th:classappend="${booking.status.name() == 'CONFIRMED' ? 'text-bg-success' : (booking.status.name() == 'PENDING' ? 'text-bg-warning' : 'text-bg-secondary')}"
+                          th:text="${booking.status.label}">Chờ xác nhận</span>
+                </div>
+
+                <div class="row g-4 align-items-center mb-4">
+                    <div class="col-md-8">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-secondary">Mã đặt sân</dt>
+                            <dd class="col-sm-8"><strong class="fs-5 text-success" th:text="${booking.bookingCode}">PB</strong></dd>
+
+                            <dt class="col-sm-4 text-secondary">Thời gian chơi</dt>
+                            <dd class="col-sm-8 fw-semibold text-primary"
+                                th:text="${#temporals.format(booking.startAt, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#temporals.format(booking.endAt, 'HH:mm')}">Thời gian</dd>
+
+                            <dt class="col-sm-4 text-secondary">Số người chơi</dt>
+                            <dd class="col-sm-8" th:text="${booking.playerCount} + ' người'">2 người</dd>
+
+                            <dt class="col-sm-4 text-secondary">Thanh toán</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge text-bg-light border" th:text="${booking.paymentStatus.label}">Chưa thanh toán</span>
+                                <small class="text-secondary ms-1" th:text="'(' + ${booking.paymentMethod.name()} + ')'">CASH</small>
+                            </dd>
+
+                            <dt class="col-sm-4 text-secondary">Tổng tiền</dt>
+                            <dd class="col-sm-8 fw-bold fs-5 text-dark"
+                                th:text="${#numbers.formatDecimal(booking.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</dd>
+                        </dl>
+                    </div>
+
+                    <!-- QR Code for Check-in -->
+                    <div class="col-md-4 text-center border-start-md">
+                        <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=130x130&margin=4&data=' + ${booking.bookingCode}"
+                             alt="QR Check-in" class="img-fluid rounded border bg-white p-1 mb-2" width="130" height="130">
+                        <small class="d-block text-secondary">Mã vé Check-in tại quầy</small>
+                    </div>
+                </div>
+
+                <!-- VietQR Payment instruction if unpaid & bank transfer -->
+                <div class="panel border-primary mb-4 text-start bg-light"
+                     th:if="${booking.paymentStatus.name() == 'UNPAID' and booking.paymentMethod.name() == 'BANK_TRANSFER' and booking.status.isActive()}">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-4 text-center">
+                            <img th:src="'https://img.vietqr.io/image/ICB-102874659281-compact2.png?amount=' + ${booking.finalAmount} + '&addInfo=' + ${booking.bookingCode} + '&accountName=CONG%20BAO%20PICKLEBALL'"
+                                 alt="VietQR Chuyển khoản" class="img-fluid rounded border bg-white p-2 shadow-sm" style="max-width: 180px;">
+                        </div>
+                        <div class="col-md-8">
+                            <h3 class="h6 fw-bold text-primary mb-1">💳 Thanh toán Chuyển khoản VietQR</h3>
+                            <p class="small text-secondary mb-1">Quét mã bằng ứng dụng ngân hàng để hoàn tất giữ chỗ:</p>
+                            <ul class="list-unstyled mb-0 small">
+                                <li><strong>Ngân hàng:</strong> VietinBank (ICB) · <strong>STK:</strong> 102874659281</li>
+                                <li><strong>Chủ TK:</strong> CONG BAO PICKLEBALL</li>
+                                <li><strong>Nội dung CK:</strong> <span class="badge text-bg-warning" th:text="${booking.bookingCode}">PB...</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Calendar & Action Bar -->
+                <div class="d-flex flex-wrap gap-2 pt-3 border-top justify-content-between align-items-center">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-pb-ghost" th:href="@{/lich-cua-toi}">← Danh sách lịch</a>
+                        <button class="btn btn-outline-primary" type="button" onclick="addToGoogleCalendar()">
+                            📅 Google Calendar
+                        </button>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-warning" th:if="${booking.cancellable}"
+                           th:href="@{/lich-cua-toi/{id}/doi-lich(id=${booking.id})}">Đổi lịch</a>
+                        <form th:if="${booking.cancellable}" th:action="@{/lich-cua-toi/{id}/huy(id=${booking.id})}" method="post">
+                            <button class="btn btn-outline-danger" type="submit"
+                                    onclick="return confirm('Bạn có chắc chắn muốn hủy đơn đặt sân này?')">Hủy lịch</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function addToGoogleCalendar() {
+            const courtName = /*[[${booking.court.name}]]*/ 'Sân Pickleball';
+            const location = /*[[${booking.court.branch != null ? booking.court.branch.address : ''}]]*/ 'Địa chỉ sân';
+            const code = /*[[${booking.bookingCode}]]*/ 'PB';
+            const startUtc = /*[[${#temporals.format(booking.startAt, 'yyyyMMdd') + 'T' + #temporals.format(booking.startAt, 'HHmmss')}]]*/ '';
+            const endUtc = /*[[${#temporals.format(booking.endAt, 'yyyyMMdd') + 'T' + #temporals.format(booking.endAt, 'HHmmss')}]]*/ '';
+
+            const title = encodeURIComponent('Chơi Pickleball tại ' + courtName);
+            const details = encodeURIComponent('Mã vé: ' + code);
+
+            const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startUtc}/${endUtc}&details=${details}&location=${encodeURIComponent(location)}`;
+            window.open(gcalUrl, '_blank');
+        }
+        /*]]>*/
+    </script>
+</main>
+</body>
+</html>

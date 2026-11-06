@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Đặt lịch cố định theo tháng', ~{::main})}">
+<head>
+    <title>Đặt lịch cố định theo tháng - PickleBook</title>
+</head>
+<body>
+<main>
+    <section class="page-hero page-hero-compact">
+        <div class="container">
+            <span class="eyebrow">Dành cho CLB, Nhóm bạn &amp; Khách hàng thân thiết</span>
+            <h1 class="hero-title mb-1">📅 Đặt lịch cố định trong tháng</h1>
+            <p class="hero-sub mb-0">Giữ khung giờ vàng suốt cả tháng, không lo hết chỗ, tiết kiệm đến 10% chi phí sân.</p>
+        </div>
+    </section>
+
+    <section class="section section-tight">
+        <div class="container">
+            <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+            <form th:action="@{/dat-co-dinh}" th:object="${recurringForm}" method="post" id="recurringBookingForm">
+                <div class="row g-4">
+                    <!-- Left Column: Configuration & Form -->
+                    <div class="col-lg-7">
+                        <!-- Step 1: Chọn sân & Thời gian -->
+                        <div class="panel mb-4 shadow-sm border">
+                            <h2 class="h5 fw-bold mb-3 pb-2 border-bottom text-success">
+                                1. Cấu hình lịch chơi cố định
+                            </h2>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" for="courtSelect">Chọn sân Pickleball *</label>
+                                    <select class="form-select" id="courtSelect" th:field="*{courtId}" required onchange="fetchPreview()">
+                                        <option th:each="c : ${courts}" th:value="${c.id}"
+                                                th:text="${c.name} + ' (' + (c.branch != null ? c.branch.name : 'Chính') + ' - ' + ${#numbers.formatDecimal(c.basePrice, 0, 'COMMA', 0, 'POINT')} + ' ₫/h)'"
+                                                th:selected="${c.id == selectedCourtId}">Sân 1</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 col-6">
+                                    <label class="form-label fw-semibold" for="monthSelect">Tháng *</label>
+                                    <select class="form-select" id="monthSelect" th:field="*{month}" required onchange="fetchPreview()">
+                                        <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
+                                                th:text="'Tháng ' + ${m}" th:selected="${m == defaultMonth}">Tháng 11</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 col-6">
+                                    <label class="form-label fw-semibold" for="yearSelect">Năm *</label>
+                                    <select class="form-select" id="yearSelect" th:field="*{year}" required onchange="fetchPreview()">
+                                        <option th:each="y : ${#numbers.sequence(defaultYear, defaultYear + 1)}" th:value="${y}"
+                                                th:text="${y}" th:selected="${y == defaultYear}">2026</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Chọn các thứ trong tuần -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold d-block">Các thứ chơi trong tuần *</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div class="form-check form-check-inline m-0">
+                                        <input class="btn-check day-checkbox" type="checkbox" id="dayMon" name="daysOfWeek" value="MONDAY" checked onchange="fetchPreview()">
+                                        <label class="btn btn-outline-success" for="dayMon">Thứ 2</label>
+                                    </div>
+                                    <div class="form-check form-check-inline m-0">
+                                        <input class="btn-check day-checkbox" type="checkbox" id="dayTue" name="daysOfWeek" value="TUESDAY" onchange="fetchPreview()">
+                                        <label class="btn btn-outline-success" for="dayTue">Thứ 3</label>
+                                    </div>
+                                    <div class="form-check form-check-inline m-0">
+                                        <input class="btn-check day-checkbox" type="checkbox" id="dayWed" name="daysOfWeek" value="WEDNESDAY" checked onchange="fetchPreview()">
+                                        <label class="btn btn-outline-success" for="dayWed">Thứ 4</label>
+                                    </div>
+                                    <div class="form-check form-check-inline m-0">
+                                        <input class="btn-check day-checkbox" type="checkbox" id="dayThu" name="daysOfWeek" value="THURSDAY" onchange="fetchPreview()">
+                                        <label class="btn btn-outline-success" for="dayThu">Thứ 5</label>
+                                    </div>
+                                    <div class="form-check form-check-inline m-0">
+                                        <input class="btn-check day-checkbox" type="checkbox" id="dayFri" name="daysOfWeek" value="FRIDAY" checked onchange="fetchPreview()">
+                                        <label class="btn btn-outline-success" for="dayFri">Thứ 6</label>
+                                    </div>
+                                    <div class="form-check form-check-inline m-0">
+                                        <input class="btn-check day-checkbox" type="checkbox" id="daySat" name="daysOfWeek" value="SATURDAY" onchange="fetchPreview()">
+                                        <label class="btn btn-outline-success" for="daySat">Thứ 7</label>
+                                    </div>
+                                    <div class="form-check form-check-inline m-0">
+                                        <input class="btn-check day-checkbox" type="checkbox" id="daySun" name="daysOfWeek" value="SUNDAY" onchange="fetchPreview()">
+                                        <label class="btn btn-outline-success" for="daySun">Chủ Nhật</label>
+                                    </div>
+                                </div>
+                                <div class="form-text">Bạn có thể chọn 1 hoặc nhiều thứ trong tuần (ví dụ: Thứ 2 - 4 - 6 hoặc Thứ 3 - 5 - 7).</div>
+                            </div>
+
+                            <!-- Chọn khung giờ cố định -->
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" for="startTimeInput">Giờ bắt đầu *</label>
+                                    <select class="form-select" id="startTimeInput" th:field="*{startTime}" required onchange="fetchPreview()">
+                                        <option value="06:00">06:00 sáng</option>
+                                        <option value="07:00">07:00 sáng</option>
+                                        <option value="08:00">08:00 sáng</option>
+                                        <option value="09:00">09:00 sáng</option>
+                                        <option value="16:00">16:00 chiều</option>
+                                        <option value="17:00">17:00 chiều</option>
+                                        <option value="18:00" selected>18:00 tối (Giờ vàng)</option>
+                                        <option value="19:00">19:00 tối (Giờ vàng)</option>
+                                        <option value="20:00">20:00 tối</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" for="endTimeInput">Giờ kết thúc *</label>
+                                    <select class="form-select" id="endTimeInput" th:field="*{endTime}" required onchange="fetchPreview()">
+                                        <option value="07:00">07:00 sáng (1 tiếng)</option>
+                                        <option value="08:00">08:00 sáng (1-2 tiếng)</option>
+                                        <option value="09:00">09:00 sáng</option>
+                                        <option value="10:00">10:00 sáng</option>
+                                        <option value="18:00">18:00 chiều</option>
+                                        <option value="19:00">19:00 tối</option>
+                                        <option value="20:00" selected>20:00 tối (2 tiếng)</option>
+                                        <option value="21:00">21:00 tối</option>
+                                        <option value="22:00">22:00 đêm</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Thông tin người đặt hợp đồng -->
+                        <div class="panel mb-4 shadow-sm border">
+                            <h2 class="h5 fw-bold mb-3 pb-2 border-bottom text-success">
+                                2. Thông tin liên hệ đại diện
+                            </h2>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="customerName">Họ và tên người đại diện *</label>
+                                    <input class="form-control" id="customerName" th:field="*{customerName}" required maxlength="120" placeholder="Nguyễn Văn A">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="customerPhone">Số điện thoại liên hệ *</label>
+                                    <input class="form-control" id="customerPhone" th:field="*{customerPhone}" required maxlength="20" placeholder="0909123456">
+                                    <div class="form-text">Nhận mã xác nhận và liên hệ từ quản lý sân.</div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="customerEmail">Địa chỉ Email *</label>
+                                    <input class="form-control" id="customerEmail" type="email" th:field="*{customerEmail}" required maxlength="160" placeholder="email@example.com">
+                                    <div class="form-text">Hợp đồng và lịch chi tiết các buổi sẽ được gửi vào email này.</div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="note">Ghi chú yêu cầu thêm</label>
+                                    <textarea class="form-control" id="note" rows="2" th:field="*{note}" placeholder="Ví dụ: Tên CLB, nhu cầu thuê thêm bóng hoặc giữ vợt..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold" for="paymentMethod">Phương thức thanh toán</label>
+                                    <select class="form-select" id="paymentMethod" th:field="*{paymentMethod}">
+                                        <option value="BANK_TRANSFER" selected>Chuyển khoản VietQR (Quét mã Napas 24/7)</option>
+                                        <option value="CASH">Thanh toán trực tiếp tại sân</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Interactive Schedule & Price Preview -->
+                    <div class="col-lg-5">
+                        <div class="panel sticky-top shadow-sm border" style="top: 90px;">
+                            <div class="d-flex justify-content-between align-items-center pb-2 border-bottom mb-3">
+                                <h2 class="h5 fw-bold mb-0 text-success">📝 Chi tiết lịch trong tháng</h2>
+                                <span class="badge text-bg-success fs-6" id="previewBadgeSessions">0 buổi</span>
+                            </div>
+
+                            <!-- Interactive List of Monthly Sessions -->
+                            <div id="previewLoading" class="text-center py-4 d-none">
+                                <div class="spinner-border text-success" role="status"></div>
+                                <p class="text-secondary small mt-2 mb-0">Đang kiểm tra lịch trống từng buổi...</p>
+                            </div>
+
+                            <div id="previewSessionsList" class="overflow-auto pe-1 mb-3" style="max-height: 280px;">
+                                <!-- Dynamic sessions rendered via JS -->
+                            </div>
+
+                            <!-- Price Summary Box -->
+                            <div class="bg-light p-3 rounded-3 border mb-3">
+                                <div class="d-flex justify-content-between text-secondary mb-1">
+                                    <span>Tổng số buổi:</span>
+                                    <strong id="summaryTotalSessions" class="text-dark">0 buổi</strong>
+                                </div>
+                                <div class="d-flex justify-content-between text-secondary mb-1">
+                                    <span>Số buổi khả dụng:</span>
+                                    <strong id="summaryAvailableSessions" class="text-success">0 buổi</strong>
+                                </div>
+                                <div class="d-flex justify-content-between text-secondary mb-1">
+                                    <span>Tạm tính tiền sân:</span>
+                                    <span id="summaryTotalAmount" class="fw-semibold text-dark">0 ₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-danger mb-2" id="discountRow">
+                                    <span>Ưu đãi đặt tháng:</span>
+                                    <strong id="summaryDiscountAmount">- 0 ₫</strong>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark fs-6">Tổng thanh toán:</strong>
+                                    <strong id="summaryFinalAmount" class="text-success fs-5">0 ₫</strong>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-secondary">Đặt cọc trước (30%):</small>
+                                    <strong id="summaryDepositAmount" class="text-primary fs-6">0 ₫</strong>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning small mb-3 d-none" id="conflictAlert">
+                                ⚠️ <strong>Lưu ý:</strong> Một số buổi bị trùng với khách đã đặt trước hoặc lịch bảo trì. Hệ thống sẽ chỉ tạo lịch cho các buổi khả dụng.
+                            </div>
+
+                            <button class="btn btn-pb btn-lg w-100 py-3 fw-bold shadow" type="submit" id="submitContractBtn">
+                                ✓ Xác nhận &amp; Đăng ký lịch cố định ➔
+                            </button>
+                            <p class="text-center text-secondary small mt-2 mb-0">
+                                Hợp đồng sẽ được gửi qua email kèm mã QR chuyển khoản VietQR.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Script tương tác tự động tính toán lịch các buổi trong tháng -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchPreview();
+        });
+
+        function fetchPreview() {
+            const courtId = document.getElementById('courtSelect').value;
+            const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const startTime = document.getElementById('startTimeInput').value;
+            const endTime = document.getElementById('endTimeInput').value;
+
+            const dayCheckboxes = document.querySelectorAll('.day-checkbox:checked');
+            const daysOfWeek = Array.from(dayCheckboxes).map(cb => cb.value);
+
+            if (!courtId || daysOfWeek.length === 0 || !startTime || !endTime) {
+                return;
+            }
+
+            const loading = document.getElementById('previewLoading');
+            const list = document.getElementById('previewSessionsList');
+            if (loading) loading.classList.remove('d-none');
+
+            const params = new URLSearchParams({
+                courtId: courtId,
+                year: year,
+                month: month,
+                startTime: startTime,
+                endTime: endTime
+            });
+            daysOfWeek.forEach(d => params.append('daysOfWeek', d));
+
+            fetch('/api/recurring/preview?' + params.toString())
+                .then(r => {
+                    if (!r.ok) throw new Error('Không thể kiểm tra lịch');
+                    return r.json();
+                })
+                .then(data => {
+                    if (loading) loading.classList.add('d-none');
+                    renderPreview(data);
+                })
+                .catch(err => {
+                    if (loading) loading.classList.add('d-none');
+                    console.error(err);
+                });
+        }
+
+        function renderPreview(data) {
+            const list = document.getElementById('previewSessionsList');
+            const badge = document.getElementById('previewBadgeSessions');
+            const totalSessions = document.getElementById('summaryTotalSessions');
+            const availableSessions = document.getElementById('summaryAvailableSessions');
+            const totalAmount = document.getElementById('summaryTotalAmount');
+            const discountAmount = document.getElementById('summaryDiscountAmount');
+            const finalAmount = document.getElementById('summaryFinalAmount');
+            const depositAmount = document.getElementById('summaryDepositAmount');
+            const conflictAlert = document.getElementById('conflictAlert');
+            const submitBtn = document.getElementById('submitContractBtn');
+
+            if (!data || !data.sessions) return;
+
+            badge.textContent = data.availableSessions + ' / ' + data.totalSessions + ' buổi';
+            totalSessions.textContent = data.totalSessions + ' buổi';
+            availableSessions.textContent = data.availableSessions + ' buổi';
+            totalAmount.textContent = Number(data.totalAmount).toLocaleString('vi-VN') + ' ₫';
+            discountAmount.textContent = '- ' + Number(data.discountAmount).toLocaleString('vi-VN') + ' ₫';
+            finalAmount.textContent = Number(data.finalAmount).toLocaleString('vi-VN') + ' ₫';
+            depositAmount.textContent = Number(data.depositAmount).toLocaleString('vi-VN') + ' ₫';
+
+            if (data.hasConflicts) {
+                conflictAlert.classList.remove('d-none');
+            } else {
+                conflictAlert.classList.add('d-none');
+            }
+
+            if (data.availableSessions > 0) {
+                submitBtn.removeAttribute('disabled');
+            } else {
+                submitBtn.setAttribute('disabled', 'disabled');
+            }
+
+            let html = '<div class="list-group list-group-flush">';
+            data.sessions.forEach((s, idx) => {
+                const isAvail = s.available;
+                const statusBadge = isAvail
+                    ? '<span class="badge text-bg-success">Khả dụng</span>'
+                    : `<span class="badge text-bg-warning" title="${s.conflictReason || 'Trùng lịch'}">Trùng lịch</span>`;
+
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 border-bottom ${isAvail ? '' : 'bg-body-secondary text-muted opacity-75'}">
+                        <div>
+                            <strong class="d-block small text-dark">Buổi ${idx + 1}: ${s.dayOfWeekLabel}</strong>
+                            <small class="text-secondary">${s.startTime.substring(0, 5)} - ${s.endTime.substring(0, 5)}</small>
+                            ${!isAvail ? `<small class="d-block text-danger">${s.conflictReason || 'Đã có lịch'}</small>` : ''}
+                        </div>
+                        <div class="text-end">
+                            <span class="d-block small fw-bold ${isAvail ? 'text-success' : 'text-secondary'}">${Number(s.price).toLocaleString('vi-VN')} ₫</span>
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            list.innerHTML = html;
+        }
+    </script>
+</main>
+</body>
+</html>
+

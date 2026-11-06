@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Thiết lập quy tắc giá', ~{::main})}">
+<head><title>Thiết lập quy tắc giá</title></head>
+<body>
+<main class="section">
+    <div class="container" style="max-width: 800px">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="mb-4">
+            <span class="eyebrow">Quản trị · Doanh thu &amp; Bảng giá</span>
+            <h1 class="h2" th:text="${ruleId == null ? 'Thêm quy tắc giá / Giờ vàng mới' : 'Cập nhật quy tắc giá'}">Thiết lập quy tắc giá</h1>
+            <p class="text-secondary mb-0">Khi khách chọn ca thi đấu rơi vào khoảng giờ này, hệ thống sẽ tự động tính theo đơn giá cấu hình.</p>
+        </div>
+
+        <form class="panel" th:object="${ruleForm}"
+              th:action="${ruleId == null ? '/admin/pricing' : '/admin/pricing/' + ruleId}" method="post">
+            <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+                <p class="mb-1" th:each="error : ${#fields.globalErrors()}" th:text="${error}">Lỗi dữ liệu.</p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="courtId">Áp dụng cho sân cụ thể</label>
+                    <select class="form-select" id="courtId" th:field="*{courtId}">
+                        <option value="">-- Áp dụng cho nhiều sân / Toàn bộ --</option>
+                        <option th:each="court : ${courts}" th:value="${court.id}"
+                                th:text="${court.name} + ' (' + ${court.branch.name} + ')'">Sân 1</option>
+                    </select>
+                    <div class="form-text">Để trống nếu muốn áp dụng cho cả cơ sở hoặc toàn bộ sân.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="branchId">Áp dụng cho cơ sở</label>
+                    <select class="form-select" id="branchId" th:field="*{branchId}">
+                        <option value="">-- Toàn bộ hệ thống --</option>
+                        <option th:each="branch : ${branches}" th:value="${branch.id}" th:text="${branch.name}">Cơ sở Q1</option>
+                    </select>
+                    <div class="form-text">Chỉ có hiệu lực khi không chọn sân cụ thể.</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="dayType">Loại ngày</label>
+                    <select class="form-select" id="dayType" th:field="*{dayType}">
+                        <option th:each="type : ${dayTypes}" th:value="${type}" th:text="${type.label}">Ngày thường</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="startTime">Giờ bắt đầu</label>
+                    <input class="form-control" id="startTime" type="time" th:field="*{startTime}" required>
+                    <div class="invalid-feedback d-block" th:errors="*{startTime}"></div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="endTime">Giờ kết thúc</label>
+                    <input class="form-control" id="endTime" type="time" th:field="*{endTime}" required>
+                    <div class="invalid-feedback d-block" th:errors="*{endTime}"></div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="pricePerHour">Đơn giá mỗi giờ (VNĐ) *</label>
+                    <input class="form-control" id="pricePerHour" type="number" min="0" step="1000" th:field="*{pricePerHour}" required>
+                    <div class="invalid-feedback d-block" th:errors="*{pricePerHour}"></div>
+                    <div class="form-text">Ví dụ: 200000 cho ca tối từ 17:00 đến 22:00.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="priority">Độ ưu tiên (Priority)</label>
+                    <input class="form-control" id="priority" type="number" th:field="*{priority}">
+                    <div class="form-text">Số càng lớn càng được ưu tiên ghi đè giá cơ bản (mặc định: 10 cho giờ vàng, 20 cho ngày lễ).</div>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="active" th:field="*{active}">
+                        <label class="form-check-label" for="active">
+                            Kích hoạt quy tắc giá này ngay
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                <button class="btn btn-pb" type="submit">Lưu quy tắc giá</button>
+                <a class="btn btn-pb-ghost" th:href="@{/admin/pricing}">Hủy</a>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>
+

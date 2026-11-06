@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Thông tin sân', ~{::main})}">
+<head><title>Thông tin sân</title></head>
+<body>
+<main class="section">
+    <div class="container" style="max-width: 960px">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="mb-4">
+            <span class="eyebrow">Quản trị · Cơ sở và sân</span>
+            <h1 class="h2" th:text="${courtId == null ? 'Thêm sân mới' : 'Cập nhật sân'}">Thông tin sân</h1>
+            <p class="text-secondary mb-0">Thông tin này được dùng trên trang giới thiệu sân và khi tính lịch đặt.</p>
+        </div>
+        <div th:replace="~{fragments/flash :: flash}"></div>
+        <form class="panel" th:object="${courtForm}"
+              th:action="${courtId == null ? '/admin/courts' : '/admin/courts/' + courtId}" method="post" enctype="multipart/form-data">
+            <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+                <p class="mb-1" th:each="error : ${#fields.globalErrors()}" th:text="${error}">Lỗi dữ liệu.</p>
+            </div>
+            <h2 class="h5 mb-3">Thông tin chung</h2>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label" for="name">Tên sân *</label>
+                    <input class="form-control" id="name" th:field="*{name}" maxlength="150" required>
+                    <div class="invalid-feedback d-block" th:errors="*{name}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="branchId">Cơ sở *</label>
+                    <select class="form-select" id="branchId" th:field="*{branchId}" required>
+                        <option value="">Chọn cơ sở</option>
+                        <option th:each="branch : ${branches}" th:value="${branch.id}" th:text="${branch.name}">Cơ sở</option>
+                    </select>
+                    <div class="invalid-feedback d-block" th:errors="*{branchId}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="courtType">Loại sân</label>
+                    <select class="form-select" id="courtType" th:field="*{courtType}">
+                        <option th:each="type : ${courtTypes}" th:value="${type}" th:text="${type.label}">Ngoài trời</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="status">Trạng thái</label>
+                    <select class="form-select" id="status" th:field="*{status}">
+                        <option th:each="statusOption : ${courtStatuses}" th:value="${statusOption}" th:text="${statusOption.label}">Đang hoạt động</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="basePrice">Giá cơ bản mỗi giờ (VNĐ) *</label>
+                    <input class="form-control" id="basePrice" type="number" min="0" step="1000" th:field="*{basePrice}" required>
+                    <div class="invalid-feedback d-block" th:errors="*{basePrice}"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="description">Giới thiệu sân</label>
+                    <textarea class="form-control" id="description" rows="3" th:field="*{description}" maxlength="4000"></textarea>
+                    <div class="invalid-feedback d-block" th:errors="*{description}"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="amenities">Tiện ích</label>
+                    <input class="form-control" id="amenities" th:field="*{amenities}" maxlength="500"
+                           placeholder="Ví dụ: Bãi đỗ xe, Phòng thay đồ, Thuê vợt">
+                    <div class="form-text">Ngăn cách các tiện ích bằng dấu phẩy.</div>
+                    <div class="invalid-feedback d-block" th:errors="*{amenities}"></div>
+                </div>
+
+                <!-- Thêm ảnh khi tạo mới sân -->
+                <div class="col-12" th:if="${courtId == null}">
+                    <hr class="my-3">
+                    <h3 class="h6 fw-bold mb-2">🖼️ Hình ảnh đại diện cho sân</h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="imageFile">Tải tệp ảnh từ máy tính (PNG, JPG, WebP)</label>
+                            <input class="form-control" type="file" id="imageFile" name="imageFile" accept="image/*">
+                            <div class="form-text">Dung lượng tối đa 5MB. Ảnh sẽ được tự động chọn làm ảnh chính.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="imageUrl">Hoặc dán URL ảnh trực tiếp</label>
+                            <input class="form-control" type="text" id="imageUrl" th:field="*{imageUrl}" placeholder="https://example.com/san-pickleball.jpg">
+                            <div class="form-text">Đường dẫn ảnh trực tuyến có sẵn trên internet.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+                <div>
+                    <h2 class="h5 mb-0">Giờ hoạt động theo ngày</h2>
+                    <p class="small text-secondary mb-0">Khung giờ khách đặt được tạo bên trong khoảng mở cửa này. Chọn “Đóng cửa” cho ngày nghỉ.</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 mt-sm-0" onclick="copyMondayHours()">
+                    ⚡ Áp dụng giờ Thứ 2 cho cả tuần
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Ngày</th><th>Giờ mở cửa</th><th>Giờ đóng cửa</th><th>Đóng cửa</th></tr></thead>
+                    <tbody>
+                    <tr th:each="day, dayStat : *{schedules}">
+                        <td>
+                            <span th:text="${day.dayLabel}">Thứ 2</span>
+                            <input type="hidden" th:field="*{schedules[__${dayStat.index}__].dayOfWeek}">
+                        </td>
+                        <td><input class="form-control" type="time" th:field="*{schedules[__${dayStat.index}__].openTime}"></td>
+                        <td><input class="form-control" type="time" th:field="*{schedules[__${dayStat.index}__].closeTime}"></td>
+                        <td><input class="form-check-input" type="checkbox" th:field="*{schedules[__${dayStat.index}__].closed}"
+                                   th:attr="aria-label='Đóng cửa ' + ${day.dayLabel}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="my-4">
+            <h2 class="h5 mb-3">Quy tắc nhận đặt</h2>
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="slotMinutes">Độ dài khung (phút)</label>
+                    <input class="form-control" id="slotMinutes" type="number" min="15" max="240" th:field="*{slotMinutes}">
+                    <div class="invalid-feedback d-block" th:errors="*{slotMinutes}"></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="bufferMinutes">Nghỉ giữa lượt (phút)</label>
+                    <input class="form-control" id="bufferMinutes" type="number" min="0" max="180" th:field="*{bufferMinutes}">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="minNoticeMinutes">Báo trước tối thiểu (phút)</label>
+                    <input class="form-control" id="minNoticeMinutes" type="number" min="0" max="10080" th:field="*{minNoticeMinutes}">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="maxAdvanceDays">Đặt trước tối đa (ngày)</label>
+                    <input class="form-control" id="maxAdvanceDays" type="number" min="1" max="365" th:field="*{maxAdvanceDays}">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="maxSlotsPerBooking">Số khung tối đa mỗi đơn</label>
+                    <input class="form-control" id="maxSlotsPerBooking" type="number" min="1" max="24" th:field="*{maxSlotsPerBooking}">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="sortOrder">Thứ tự hiển thị</label>
+                    <input class="form-control" id="sortOrder" type="number" min="0" max="9999" th:field="*{sortOrder}">
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button class="btn btn-pb" type="submit">Lưu sân</button>
+                <a class="btn btn-pb-ghost" th:href="@{/admin/courts}">Hủy</a>
+            </div>
+        </form>
+
+        <!-- Gallery & Image Management Section (chỉ hiển thị khi đang sửa sân đã có ID) -->
+        <div class="panel mt-4" th:if="${courtId != null}">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div>
+                    <h2 class="h5 mb-0">🖼️ Bộ sưu tập hình ảnh của sân</h2>
+                    <p class="text-secondary small mb-0">Quản lý các hình ảnh thực tế của sân để khách xem khi đặt online.</p>
+                </div>
+            </div>
+
+            <!-- Danh sách ảnh hiện có -->
+            <div class="row g-3 mb-4" th:if="${!#lists.isEmpty(courtImages)}">
+                <div class="col-6 col-md-4 col-lg-3" th:each="img : ${courtImages}">
+                    <div class="card h-100 shadow-sm border position-relative overflow-hidden">
+                        <img th:src="${img.imageUrl}" th:alt="${img.altText}" class="card-img-top" style="height: 140px; object-fit: cover;">
+                        <span class="position-absolute top-0 start-0 m-2 badge text-bg-success shadow" th:if="${img.primary}">⭐ Ảnh chính</span>
+                        <div class="card-body p-2 d-flex flex-column justify-content-between gap-2">
+                            <small class="text-truncate text-secondary" th:text="${img.altText ?: 'Ảnh sân'}">Ảnh sân</small>
+                            <div class="d-flex justify-content-between gap-1">
+                                <form th:if="${!img.primary}" th:action="@{/admin/courts/{id}/images/{imgId}/primary(id=${courtId},imgId=${img.id})}" method="post">
+                                    <button class="btn btn-xs btn-outline-primary" type="submit" title="Đặt làm ảnh đại diện chính">⭐ Làm chính</button>
+                                </form>
+                                <span class="badge text-bg-light border" th:if="${img.primary}">Mặc định</span>
+                                <form th:action="@{/admin/courts/{id}/images/{imgId}/delete(id=${courtId},imgId=${img.id})}" method="post"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa ảnh này?');">
+                                    <button class="btn btn-xs btn-outline-danger" type="submit" title="Xóa ảnh này">🗑️ Xóa</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-light border text-center py-4 mb-4" th:if="${#lists.isEmpty(courtImages)}">
+                <p class="text-secondary mb-0">Sân này chưa có hình ảnh nào. Hãy tải lên ảnh thực tế đầu tiên bên dưới.</p>
+            </div>
+
+            <!-- Form tải thêm ảnh mới -->
+            <div class="bg-light p-3 rounded-3 border">
+                <h3 class="h6 fw-bold mb-3">＋ Tải thêm ảnh mới cho sân này</h3>
+                <form th:action="@{/admin/courts/{id}/images(id=${courtId})}" method="post" enctype="multipart/form-data">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label small fw-semibold" for="newImageFile">Chọn tệp ảnh từ máy (PNG, JPG, WebP)</label>
+                            <input class="form-control form-control-sm" type="file" id="newImageFile" name="imageFile" accept="image/*">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold" for="newImageUrl">Hoặc dán URL ảnh</label>
+                            <input class="form-control form-control-sm" type="text" id="newImageUrl" name="imageUrl" placeholder="https://...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold" for="altText">Chú thích ảnh</label>
+                            <input class="form-control form-control-sm" type="text" id="altText" name="altText" placeholder="Mặt sân, dàn đèn...">
+                        </div>
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="primaryCheck" name="primary" value="true">
+                                <label class="form-check-label small" for="primaryCheck">
+                                    Đặt làm ảnh đại diện chính ngay
+                                </label>
+                            </div>
+                            <button class="btn btn-sm btn-pb" type="submit">Tải lên ảnh ➔</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script>
+            function copyMondayHours() {
+                const monOpen = document.querySelector('input[name="schedules[0].openTime"]');
+                const monClose = document.querySelector('input[name="schedules[0].closeTime"]');
+                if (!monOpen || !monClose || !monOpen.value || !monClose.value) {
+                    alert('Vui lòng nhập giờ mở và đóng cửa của Thứ 2 trước.');
+                    return;
+                }
+                for (let i = 1; i < 7; i++) {
+                    const openInput = document.querySelector(`input[name="schedules[${i}].openTime"]`);
+                    const closeInput = document.querySelector(`input[name="schedules[${i}].closeTime"]`);
+                    if (openInput && closeInput) {
+                        openInput.value = monOpen.value;
+                        closeInput.value = monClose.value;
+                    }
+                }
+            }
+        </script>
+    </div>
+</main>
+</body>
+</html>

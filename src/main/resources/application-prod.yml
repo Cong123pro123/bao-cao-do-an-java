@@ -1,0 +1,28 @@
+# ============================================================
+#  Profile PROD - kế thừa mysql (spring.profiles.group.prod=mysql)
+#  Không tự chạy schema.sql/data.sql trên production.
+# ============================================================
+spring:
+  thymeleaf:
+    cache: true
+  sql:
+    init:
+      mode: never
+  jpa:
+    properties:
+      hibernate:
+        format_sql: false
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+
+app:
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+
+logging:
+  level:
+    root: WARN
+    com.picklebook: INFO

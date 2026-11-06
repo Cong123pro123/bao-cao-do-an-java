@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Chi tiết hợp đồng cố định', ~{::main})}">
+<head>
+    <title>Chi tiết hợp đồng cố định - PickleBook</title>
+</head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <a class="btn btn-sm btn-outline-secondary mb-2" th:href="@{/admin/recurring}">← Quay lại danh sách</a>
+                <h1 class="h2 mb-0">Hợp đồng <span class="text-success" th:text="${contract.contractCode}">CD000000</span></h1>
+            </div>
+            <div class="d-flex gap-2">
+                <form th:if="${contract.status.name() == 'PENDING'}"
+                      th:action="@{/admin/recurring/{id}/approve(id=${contract.id})}" method="post">
+                    <button class="btn btn-success fw-bold px-3" type="submit">
+                        ✓ Phê duyệt hợp đồng &amp; Xác nhận cọc
+                    </button>
+                </form>
+
+                <form th:if="${contract.status.name() != 'CANCELLED'}"
+                      th:action="@{/admin/recurring/{id}/cancel(id=${contract.id})}" method="post"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy hợp đồng này?');">
+                    <button class="btn btn-outline-danger" type="submit">✕ Hủy hợp đồng</button>
+                </form>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <div class="row g-4 mb-4">
+            <!-- Left Info Panel -->
+            <div class="col-lg-6">
+                <div class="panel h-100 shadow-sm border">
+                    <h2 class="h5 fw-bold mb-3 pb-2 border-bottom">👤 Thông tin khách hàng &amp; Sân</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-secondary">Khách hàng:</dt>
+                        <dd class="col-sm-8 fw-bold" th:text="${contract.customerName}">Nguyễn Văn A</dd>
+
+                        <dt class="col-sm-4 text-secondary">Số điện thoại:</dt>
+                        <dd class="col-sm-8"><a th:href="'tel:' + ${contract.customerPhone}" th:text="${contract.customerPhone}">0909123456</a></dd>
+
+                        <dt class="col-sm-4 text-secondary">Email:</dt>
+                        <dd class="col-sm-8" th:text="${contract.customerEmail}">email@example.com</dd>
+
+                        <dt class="col-sm-4 text-secondary">Sân chơi:</dt>
+                        <dd class="col-sm-8"><strong class="text-success" th:text="${contract.court.name}">Sân 1</strong> (<span th:text="${contract.court.branch != null ? contract.court.branch.name : ''}"></span>)</dd>
+
+                        <dt class="col-sm-4 text-secondary">Lịch chơi:</dt>
+                        <dd class="col-sm-8"><span class="badge text-bg-light border" th:text="${contract.daysOfWeek}">MONDAY</span> lúc <strong th:text="${#temporals.format(contract.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(contract.endTime, 'HH:mm')}">18:00 - 20:00</strong></dd>
+
+                        <dt class="col-sm-4 text-secondary">Ghi chú:</dt>
+                        <dd class="col-sm-8 text-muted fst-italic" th:text="${contract.note != null ? contract.note : 'Không có ghi chú'}">Không có</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Right Financial Panel -->
+            <div class="col-lg-6">
+                <div class="panel h-100 shadow-sm border">
+                    <h2 class="h5 fw-bold mb-3 pb-2 border-bottom">💰 Tài chính &amp; Trạng thái</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-secondary">Trạng thái HĐ:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge fs-6"
+                                  th:classappend="${contract.status.name() == 'APPROVED' ? 'text-bg-success' : (contract.status.name() == 'PENDING' ? 'text-bg-warning' : 'text-bg-secondary')}"
+                                  th:text="${contract.status.label}">Chờ duyệt</span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-secondary">Thanh toán:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge"
+                                  th:classappend="${contract.paymentStatus.name() == 'PAID' ? 'text-bg-success' : 'text-bg-warning'}"
+                                  th:text="${contract.paymentStatus.label}">Chờ thanh toán</span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-secondary">Tổng số buổi:</dt>
+                        <dd class="col-sm-7 fw-bold" th:text="${contract.totalSessions} + ' buổi'">12 buổi</dd>
+
+                        <dt class="col-sm-5 text-secondary">Giá mỗi buổi:</dt>
+                        <dd class="col-sm-7" th:text="${#numbers.formatDecimal(contract.pricePerSession, 0, 'COMMA', 0, 'POINT')} + ' ₫'">300.000 ₫</dd>
+
+                        <dt class="col-sm-5 text-secondary">Tổng tiền cả tháng:</dt>
+                        <dd class="col-sm-7 fs-5 fw-bold text-success" th:text="${#numbers.formatDecimal(contract.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">3.600.000 ₫</dd>
+
+                        <dt class="col-sm-5 text-secondary">Tiền cọc tối thiểu (30%):</dt>
+                        <dd class="col-sm-7 fw-bold text-primary" th:text="${#numbers.formatDecimal(contract.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">1.080.000 ₫</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions List -->
+        <section class="panel shadow-sm border">
+            <h3 class="h5 fw-bold mb-3 pb-2 border-bottom">
+                📅 Danh sách tất cả các buổi chơi trong hợp đồng (<span th:text="${#lists.size(contract.sessions)}">12</span> buổi)
+            </h3>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Buổi</th>
+                            <th>Ngày chơi</th>
+                            <th>Khung giờ</th>
+                            <th>Đơn giá</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s, stat : ${contract.sessions}">
+                            <td th:text="'Buổi ' + ${stat.count}">Buổi 1</td>
+                            <td>
+                                <strong th:text="${#temporals.format(s.sessionDate, 'dd/MM/yyyy')}">03/11/2026</strong>
+                            </td>
+                            <td th:text="${#temporals.format(s.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(s.endTime, 'HH:mm')}">18:00 - 20:00</td>
+                            <td class="fw-semibold text-success" th:text="${#numbers.formatDecimal(s.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">300.000 ₫</td>
+                            <td>
+                                <span class="badge text-bg-success" th:text="${s.status.label}">Đã lên lịch</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>
+

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layouts/main :: layout('Tổng quan quản trị', ~{::main})}">
+<head><title>Tổng quan quản trị</title></head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="eyebrow">PickleBook · Hệ thống Quản trị</span>
+                <h1 class="h2 mb-0">Bảng điều khiển Tổng quan</h1>
+            </div>
+            <nav class="d-flex flex-wrap gap-2">
+                <a class="btn btn-pb" th:href="@{/admin/timeline}">📅 Xem Lịch Timeline</a>
+                <a class="btn btn-pb-ghost" th:href="@{/admin/bookings}">📝 Quản lý đơn</a>
+                <a class="btn btn-pb-ghost" sec:authorize="hasRole('ADMIN')" th:href="@{/admin/blocked-times}">⛔ Chặn lịch</a>
+            </nav>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <!-- 4 Key Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <section class="panel h-100 border-start border-4 border-success">
+                    <span class="text-secondary small fw-semibold text-uppercase">Đơn hôm nay</span>
+                    <strong class="d-block fs-2 text-success mt-1" th:text="${summary.todayBookings}">0</strong>
+                    <div class="small text-muted mt-1">
+                        <span class="badge text-bg-success" th:text="${summary.todayCompleted} + ' check-in'">0 check-in</span>
+                        <span class="badge text-bg-warning" th:text="${summary.todayPending} + ' chờ'">0 chờ</span>
+                    </div>
+                </section>
+            </div>
+            <div class="col-6 col-lg-3">
+                <section class="panel h-100 border-start border-4 border-primary">
+                    <span class="text-secondary small fw-semibold text-uppercase">Doanh thu hôm nay</span>
+                    <strong class="d-block fs-2 text-primary mt-1" th:text="${#numbers.formatDecimal(summary.todayRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+                    <small class="text-muted">Đã thanh toán hôm nay</small>
+                </section>
+            </div>
+            <div class="col-6 col-lg-3">
+                <section class="panel h-100 border-start border-4 border-info">
+                    <span class="text-secondary small fw-semibold text-uppercase">Đơn tháng này</span>
+                    <strong class="d-block fs-2 text-info mt-1" th:text="${summary.monthBookings}">0</strong>
+                    <small class="text-muted">Lũy kế tháng hiện tại</small>
+                </section>
+            </div>
+            <div class="col-6 col-lg-3">
+                <section class="panel h-100 border-start border-4 border-warning">
+                    <span class="text-secondary small fw-semibold text-uppercase">Doanh thu tháng</span>
+                    <strong class="d-block fs-2 text-dark mt-1" th:text="${#numbers.formatDecimal(summary.monthRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+                    <small class="text-muted">Đơn đã thanh toán/xác nhận</small>
+                </section>
+            </div>
+        </div>
+
+        <!-- Quick Management Shortcuts -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <a th:href="@{/admin/timeline}" class="panel p-3 d-flex align-items-center gap-3 text-decoration-none text-dark h-100 hover-shadow transition">
+                    <div class="fs-1">📅</div>
+                    <div>
+                        <strong class="d-block">Lịch Timeline</strong>
+                        <small class="text-secondary">Ma trận ca sân thời gian thực</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a th:href="@{/admin/pricing}" class="panel p-3 d-flex align-items-center gap-3 text-decoration-none text-dark h-100 hover-shadow transition">
+                    <div class="fs-1">💰</div>
+                    <div>
+                        <strong class="d-block">Bảng giá &amp; Giờ vàng</strong>
+                        <small class="text-secondary">Giá cao điểm, cuối tuần, lễ</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a th:href="@{/admin/blocked-times}" class="panel p-3 d-flex align-items-center gap-3 text-decoration-none text-dark h-100 hover-shadow transition">
+                    <div class="fs-1">⛔</div>
+                    <div>
+                        <strong class="d-block">Chặn lịch &amp; Bảo trì</strong>
+                        <small class="text-secondary">Khóa lịch nghỉ lễ, giải đấu</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a th:href="@{/admin/services}" class="panel p-3 d-flex align-items-center gap-3 text-decoration-none text-dark h-100 hover-shadow transition">
+                    <div class="fs-1">🏓</div>
+                    <div>
+                        <strong class="d-block">Dịch vụ &amp; HLV</strong>
+                        <small class="text-secondary">Thuê vợt, bóng, gói HLV 1-1</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Today's Court Schedule -->
+        <section class="panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h4 mb-0">Lịch thi đấu &amp; tập luyện hôm nay</h2>
+                    <small class="text-secondary">Các đơn đặt sân đang chờ phục vụ trong ngày</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge text-bg-success" th:text="${summary.activeCourts} + ' sân đang hoạt động'">0 sân hoạt động</span>
+                    <a class="btn btn-sm btn-pb-ghost" th:href="@{/admin/timeline}">Xem dạng lưới Timeline</a>
+                </div>
+            </div>
+            <div class="table-responsive" th:if="${!#lists.isEmpty(summary.todaySchedule)}">
+                <table class="table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Sân</th>
+                        <th>Khách hàng</th>
+                        <th>Thời gian chơi</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="booking : ${summary.todaySchedule}">
+                        <td><strong th:text="${booking.bookingCode}">PB</strong></td>
+                        <td>
+                            <strong th:text="${booking.court.name}">Sân</strong>
+                            <small class="d-block text-secondary" th:text="${booking.court.branch.name}">Cơ sở</small>
+                        </td>
+                        <td>
+                            <span class="d-block fw-semibold" th:text="${booking.customerName}">Khách</span>
+                            <small class="text-secondary" th:text="${booking.customerPhone}">0901234567</small>
+                        </td>
+                        <td>
+                            <span class="badge text-bg-light border"
+                                  th:text="${#temporals.format(booking.startAt, 'HH:mm')} + ' - ' + ${#temporals.format(booking.endAt, 'HH:mm')}">08:00 - 09:00</span>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${booking.status.name() == 'CONFIRMED' ? 'text-bg-success' : 'text-bg-warning'}"
+                                  th:text="${booking.status.label}">Đã xác nhận</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end align-items-center gap-1">
+                                <form th:if="${booking.status.isActive() and booking.status.name() != 'COMPLETED'}"
+                                      th:action="@{/admin/bookings/{id}/check-in(id=${booking.id})}" method="post" class="m-0">
+                                    <input type="hidden" name="returnUrl" value="/admin/dashboard">
+                                    <button class="btn btn-sm btn-success text-nowrap" type="submit">✓ Check-in</button>
+                                </form>
+                                <a class="btn btn-sm btn-pb-ghost text-nowrap" th:href="@{/admin/bookings(keyword=${booking.bookingCode})}">Chi tiết</a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center py-4" th:if="${#lists.isEmpty(summary.todaySchedule)}">
+                <p class="text-secondary mb-2">Chưa có lịch đặt sân nào trong ngày hôm nay.</p>
+                <a class="btn btn-sm btn-pb" th:href="@{/admin/timeline}">Mở lịch Timeline để xem các khung giờ trống</a>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Giới thiệu', ~{::main})}">
+<head><title>Giới thiệu</title></head>
+<body>
+<main>
+    <section class="page-hero">
+        <div class="container">
+            <span class="eyebrow">Về PickleBook</span>
+            <h1>Sân chơi được xây cho cộng đồng pickleball</h1>
+            <p th:text="${aboutText}">
+                PickleBook mang đến trải nghiệm đặt sân pickleball hiện đại, minh bạch và tiện lợi.
+            </p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="row g-4 g-lg-5 align-items-start">
+                <div class="col-lg-6">
+                    <div class="panel">
+                        <h2 class="panel-title">Chúng tôi tin vào những trải nghiệm đơn giản</h2>
+                        <p>Đặt sân không nên là một cuộc gọi điện thoại dài, một tin nhắn chờ trả lời hay một cuốn sổ tay được ghi chép bằng tay. PickleBook số hóa toàn bộ quy trình để bạn dành thời gian cho điều quan trọng nhất: chơi bóng.</p>
+                        <p>Hệ thống được thiết kế cho một cơ sở sân tại TP. Hồ Chí Minh, với lịch mở cửa linh hoạt, nhiều mức giá theo khung giờ và chính sách hủy minh bạch. Mọi thay đổi về giá hay lịch đều được quản trị viên cấu hình, không can thiệp thủ công vào từng đơn.</p>
+                        <div class="value-list">
+                            <div class="value-item">
+                                <span class="value-icon">✓</span>
+                                <div><strong>Minh bạch</strong><p>Giá và chính sách hiển thị rõ trước khi bạn xác nhận đặt sân.</p></div>
+                            </div>
+                            <div class="value-item">
+                                <span class="value-icon">⚡</span>
+                                <div><strong>Nhanh chóng</strong><p>Chọn sân, chọn giờ và nhận mã đặt sân trong vài bước.</p></div>
+                            </div>
+                            <div class="value-item">
+                                <span class="value-icon">♥</span>
+                                <div><strong>Vì người chơi</strong><p>Hủy, đổi lịch và nhắc lịch tự động giúp bạn linh hoạt hơn.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-visual">
+                        <img th:src="@{/img/banners/banner-1.svg}" alt="Không gian sân pickleball PickleBook" loading="lazy">
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-sm-6">
+                            <div class="mini-stat">
+                                <strong>4</strong>
+                                <span>Sân trong nhà và ngoài trời</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mini-stat">
+                                <strong>17h</strong>
+                                <span>Khung giờ mở cửa mỗi ngày</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mini-stat">
+                                <strong>100%</strong>
+                                <span>Đặt sân trực tuyến</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mini-stat">
+                                <strong>24/7</strong>
+                                <span>Quản lý lịch trong tài khoản</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-soft">
+        <div class="container">
+            <div class="cta-band cta-band-light">
+                <div class="cta-band-copy">
+                    <span class="eyebrow">Ghé thăm sân</span>
+                    <h2>Trải nghiệm pickleball ngay hôm nay</h2>
+                    <p th:text="${site != null and site['site.address'] != null ? site['site.address'] : '128 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh'}">
+                        128 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh
+                    </p>
+                </div>
+                <div class="cta-band-actions">
+                    <a th:href="@{/dang-ky}" class="btn btn-pb btn-lg-pb">Tạo tài khoản</a>
+                    <a th:href="'tel:' + ${site != null and site['site.phone'] != null ? site['site.phone'] : '0909123456'}"
+                       class="btn btn-pb-ghost btn-lg-pb">Gọi hotline</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

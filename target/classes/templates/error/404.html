@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Không tìm thấy trang', ~{::main})}">
+<head><title>Không tìm thấy trang</title></head>
+<body>
+<main>
+    <section class="error-page">
+        <div class="container">
+            <div class="error-card">
+                <span class="error-code" th:text="${status != null ? status : 404}">404</span>
+                <span class="eyebrow">Lạc đường rồi</span>
+                <h1>Trang bạn tìm không tồn tại</h1>
+                <p th:text="${message != null ? message : 'Đường dẫn có thể đã thay đổi hoặc nội dung đã được gỡ bỏ.'}">
+                    Đường dẫn có thể đã thay đổi hoặc nội dung đã được gỡ bỏ.
+                </p>
+                <div class="error-actions">
+                    <a th:href="@{/}" class="btn btn-pb">Về trang chủ</a>
+                    <a th:href="@{/gioi-thieu}" class="btn btn-pb-ghost">Tìm hiểu PickleBook</a>
+                </div>
+                <p class="error-help">Mẹo: dùng menu phía trên để quay lại khu vực đặt sân.</p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

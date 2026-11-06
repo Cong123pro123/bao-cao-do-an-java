@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Cấu hình bảng giá linh hoạt', ~{::main})}">
+<head><title>Cấu hình bảng giá linh hoạt</title></head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="eyebrow">Quản trị · Doanh thu &amp; Bảng giá</span>
+                <h1 class="h2 mb-1">Cấu hình Bảng giá &amp; Giờ vàng</h1>
+                <p class="text-secondary mb-0">Thiết lập giá linh hoạt theo loại ngày (ngày thường, cuối tuần, ngày lễ) và khung giờ cao điểm (Peak hours).</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-pb" th:href="@{/admin/pricing/new}">＋ Thêm quy tắc giá mới</a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <div class="panel p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Phạm vi áp dụng</th>
+                        <th>Loại ngày</th>
+                        <th>Khung giờ</th>
+                        <th>Giá mỗi giờ</th>
+                        <th>Độ ưu tiên</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="rule : ${rules}">
+                        <td>
+                            <strong class="d-block" th:if="${rule.court != null}" th:text="${rule.court.name}">Sân 1</strong>
+                            <small class="text-secondary" th:if="${rule.court != null and rule.court.branch != null}" th:text="${rule.court.branch.name}">Cơ sở</small>
+
+                            <span class="badge text-bg-info" th:if="${rule.court == null and rule.branch != null}"
+                                  th:text="'Toàn cơ sở ' + ${rule.branch.name}">Toàn cơ sở Q1</span>
+
+                            <span class="badge text-bg-dark" th:if="${rule.court == null and rule.branch == null}">Toàn bộ hệ thống</span>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${rule.dayType.name() == 'HOLIDAY' ? 'text-bg-danger' : (rule.dayType.name() == 'WEEKEND' ? 'text-bg-warning' : 'text-bg-primary')}"
+                                  th:text="${rule.dayType.label}">Ngày thường</span>
+                        </td>
+                        <td>
+                            <strong class="text-success" th:text="${#temporals.format(rule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(rule.endTime, 'HH:mm')}">17:00 - 22:00</strong>
+                        </td>
+                        <td>
+                            <strong class="fs-6" th:text="${#numbers.formatDecimal(rule.pricePerHour, 0, 'COMMA', 0, 'POINT')} + ' ₫/h'">200.000 ₫/h</strong>
+                        </td>
+                        <td>
+                            <span class="badge text-bg-light border" th:text="'Ưu tiên: ' + ${rule.priority}">Ưu tiên: 10</span>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${rule.active ? 'text-bg-success' : 'text-bg-secondary'}"
+                                  th:text="${rule.active ? 'Đang áp dụng' : 'Tạm ngưng'}">Đang áp dụng</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a class="btn btn-sm btn-pb-ghost" th:href="@{/admin/pricing/{id}/edit(id=${rule.id})}">Sửa</a>
+                                <form th:action="@{/admin/pricing/{id}/toggle(id=${rule.id})}" method="post">
+                                    <button class="btn btn-sm btn-outline-secondary" type="submit"
+                                            th:text="${rule.active ? 'Tạm ngưng' : 'Bật'}">Tạm ngưng</button>
+                                </form>
+                                <form th:action="@{/admin/pricing/{id}/delete(id=${rule.id})}" method="post"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa quy tắc giá này?');">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(rules)}">
+                        <td colspan="7" class="text-center py-5">
+                            <strong class="d-block mb-1">Chưa có quy tắc giá riêng nào</strong>
+                            <span class="text-secondary">Hệ thống đang áp dụng giá cơ bản mặc định của từng sân. Thêm quy tắc giờ vàng để tăng hiệu quả kinh doanh.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

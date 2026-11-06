@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Xác nhận đặt sân', ~{::main})}">
+<head><title>Xác nhận đặt sân</title></head>
+<body>
+<main>
+    <section class="page-hero page-hero-compact">
+        <div class="container">
+            <span class="eyebrow">Bước 2 / 3 · Hoàn tất thông tin</span>
+            <h1 class="hero-title mb-1">Xác nhận lịch chơi</h1>
+            <p class="hero-sub mb-0" th:text="${court.name} + ' · ' + ${#temporals.format(selectedDate, 'dd/MM/yyyy')}">Sân · Ngày</p>
+        </div>
+    </section>
+
+    <section class="section section-tight">
+        <div class="container">
+            <div class="alert alert-danger" role="alert" th:if="${bookingError}" th:text="${bookingError}"></div>
+
+            <div class="alert alert-warning" th:if="${#lists.isEmpty(bookingForm.slotStarts)}">
+                ⚠️ Bạn chưa chọn khung giờ nào. Vui lòng quay lại chọn ca chơi trước khi tiếp tục.
+                <a class="fw-bold ms-2" th:href="@{/san/{slug}(slug=${court.slug},date=${selectedDate})}">Quay lại lịch sân</a>
+            </div>
+
+            <form th:action="@{/dat-san}" th:object="${bookingForm}" method="post" th:if="${!#lists.isEmpty(bookingForm.slotStarts)}">
+                <input type="hidden" th:field="*{courtId}">
+                <input type="hidden" th:field="*{date}">
+                <input type="hidden" th:each="start,iter : ${bookingForm.slotStarts}"
+                       th:name="|slotStarts[${iter.index}]|" th:value="${start}">
+
+                <div class="row g-4">
+                    <!-- Left Column: Form Fields -->
+                    <div class="col-lg-7">
+                        <!-- Customer Info -->
+                        <div class="panel mb-4">
+                            <h2 class="h5 mb-3 pb-2 border-bottom">👤 Thông tin người đặt sân</h2>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="customerName">Họ và tên *</label>
+                                    <input class="form-control" id="customerName" th:field="*{customerName}" required maxlength="120">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="customerPhone">Số điện thoại *</label>
+                                    <input class="form-control" id="customerPhone" th:field="*{customerPhone}" required maxlength="20">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="customerEmail">Địa chỉ Email *</label>
+                                    <input class="form-control" id="customerEmail" type="email" th:field="*{customerEmail}" required maxlength="160">
+                                    <div class="form-text">Mã đặt sân và vé check-in sẽ được gửi vào email này.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="playerCount">Số người chơi dự kiến</label>
+                                    <input class="form-control" id="playerCount" type="number" min="1" max="20" th:field="*{playerCount}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Extra Services & Coaches (YouCanBook.me Team / Add-on style) -->
+                        <div class="panel mb-4" th:if="${!#lists.isEmpty(extraServices)}">
+                            <h2 class="h5 mb-1">🏓 Dịch vụ phụ trợ &amp; Huấn luyện viên</h2>
+                            <p class="text-secondary small mb-3">Tùy chọn thêm dụng cụ thi đấu hoặc huấn luyện viên kèm cặp.</p>
+                            <div class="row g-2">
+                                <div class="col-12" th:each="service : ${extraServices}">
+                                    <label class="d-flex align-items-center justify-content-between p-3 rounded-3 border bg-light cursor-pointer hover-shadow transition">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <input class="form-check-input mt-0" type="checkbox" th:id="|service-${service.id}|"
+                                                   th:field="*{extraServiceIds}" th:value="${service.id}">
+                                            <div>
+                                                <strong class="d-block text-dark" th:text="${service.name}">Tên dịch vụ</strong>
+                                                <small class="text-secondary" th:if="${service.description != null}" th:text="${service.description}">Mô tả</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge text-bg-success fs-6"
+                                              th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')} + ' ₫/' + ${service.unit}">30.000 ₫</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Survey Questions -->
+                        <div class="panel mb-4" th:if="${!#lists.isEmpty(questions)}">
+                            <h2 class="h5 mb-1">📋 Khảo sát trận đấu</h2>
+                            <p class="text-secondary small mb-3">Giúp ban quản lý sắp xếp bóng và hỗ trợ bạn chu đáo nhất.</p>
+                            <div th:each="question : ${questions}" class="mb-3">
+                                <label class="form-label fw-semibold" th:for="|answer-${question.id}|"
+                                       th:text="${question.label} + (${question.required} ? ' *' : '')">Câu hỏi</label>
+
+                                <select class="form-select" th:if="${question.fieldType.name() == 'SELECT'}"
+                                        th:id="|answer-${question.id}|" th:name="|answers[${question.id}]|" th:required="${question.required}">
+                                    <option value="">-- Vui lòng chọn --</option>
+                                    <option th:each="option : ${question.options}" th:value="${option}" th:text="${option}"></option>
+                                </select>
+
+                                <div class="form-check" th:if="${question.fieldType.name() == 'CHECKBOX'}"
+                                     th:each="option : ${question.options}">
+                                    <input class="form-check-input" type="checkbox" th:id="|answer-${question.id}-${optionStat.index}|"
+                                           th:name="|answers[${question.id}]|" th:value="${option}">
+                                    <label class="form-check-label" th:for="|answer-${question.id}-${optionStat.index}|" th:text="${option}"></label>
+                                </div>
+
+                                <input class="form-control" th:if="${question.fieldType.name() == 'TEXT'}"
+                                       th:id="|answer-${question.id}|" th:name="|answers[${question.id}]|" maxlength="2000"
+                                       placeholder="Nhập câu trả lời..." th:required="${question.required}">
+                            </div>
+                        </div>
+
+                        <!-- Notes & Payment Method -->
+                        <div class="panel mb-4">
+                            <h2 class="h5 mb-3 pb-2 border-bottom">💳 Thanh toán &amp; Ghi chú</h2>
+                            <div class="mb-3">
+                                <label class="form-label" for="note">Ghi chú cho ban quản lý sân</label>
+                                <textarea class="form-control" id="note" rows="2" th:field="*{note}" maxlength="2000"
+                                          placeholder="Ví dụ: Xin mượn thêm rổ bóng khởi động..."></textarea>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="couponCode">Mã ưu đãi / Voucher</label>
+                                    <input class="form-control" id="couponCode" th:field="*{couponCode}" maxlength="40" placeholder="Ví dụ: PICKLE10">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="paymentMethod">Hình thức thanh toán</label>
+                                    <select class="form-select" id="paymentMethod" th:field="*{paymentMethod}">
+                                        <option value="CASH">Thanh toán tại quầy lễ tân</option>
+                                        <option value="BANK_TRANSFER">Chuyển khoản VietQR (chờ duyệt)</option>
+                                        <option value="ONLINE">Thanh toán trực tuyến mô phỏng</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút hoàn tất đặt sân ở cuối form phía người dùng -->
+                        <div class="panel bg-light border p-3 d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 shadow-sm">
+                            <a class="btn btn-pb-ghost" th:href="@{/san/{slug}(slug=${court.slug},date=${selectedDate})}">
+                                ← Chọn lại khung giờ
+                            </a>
+                            <button class="btn btn-pb btn-lg px-4 py-3 fw-bold shadow" type="submit">
+                                ✓ Hoàn tất &amp; Xác nhận đặt sân ngay ➔
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Sticky Booking Summary Card -->
+                    <div class="col-lg-5">
+                        <div class="panel sticky-top" style="top: 100px;">
+                            <h2 class="h5 mb-3 pb-2 border-bottom">📝 Tóm tắt lịch đặt</h2>
+
+                            <div class="mb-3">
+                                <span class="eyebrow" th:text="${court.courtType.label}">Ngoài trời</span>
+                                <h3 class="h4 mb-1" th:text="${court.name}">Sân 1</h3>
+                                <p class="text-secondary small mb-1">
+                                    📍 <strong th:text="${court.branch.name}">Cơ sở</strong>: <span th:text="${court.branch.address}">Địa chỉ</span>
+                                </p>
+                                <p class="text-secondary small mb-2">
+                                    📅 Ngày chơi: <strong class="text-dark" th:text="${#temporals.format(selectedDate, 'dd/MM/yyyy')}">01/01/2026</strong>
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-uppercase text-secondary">Chi tiết khung giờ được chọn:</label>
+                                <div class="list-group mb-2" th:if="${chosenSlots != null && !#lists.isEmpty(chosenSlots)}">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 bg-light border-success-subtle"
+                                         th:each="slot : ${chosenSlots}">
+                                        <div>
+                                            <span class="badge text-bg-success me-2">Ca chơi</span>
+                                            <strong class="text-dark" th:text="${#temporals.format(slot.startAt, 'HH:mm')} + ' - ' + ${#temporals.format(slot.endAt, 'HH:mm')}">06:00 - 07:00</strong>
+                                        </div>
+                                        <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(slot.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">150.000 ₫</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2" th:if="${chosenSlots == null || #lists.isEmpty(chosenSlots)}">
+                                    <span class="badge text-bg-success fs-6 py-2 px-3"
+                                          th:each="start : ${bookingForm.slotStarts}" th:text="'🕒 ' + ${start}">🕒 06:00</span>
+                                </div>
+                            </div>
+
+                            <div class="border-top pt-3 mb-3" th:if="${slotsTotal != null}">
+                                <div class="d-flex justify-content-between text-secondary mb-1">
+                                    <span>Tạm tính tiền sân (<span th:text="${#lists.size(bookingForm.slotStarts)}">1</span> ca):</span>
+                                    <strong class="text-dark fs-6" th:text="${#numbers.formatDecimal(slotsTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">150.000 ₫</strong>
+                                </div>
+                                <div class="d-flex justify-content-between text-secondary mb-2" th:if="${depositMin != null}">
+                                    <span>Đặt cọc tối thiểu (<span th:text="${depositPercent}">30</span>%):</span>
+                                    <strong class="text-primary" th:text="${#numbers.formatDecimal(depositMin, 0, 'COMMA', 0, 'POINT')} + ' ₫'">45.000 ₫</strong>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-light border small my-3">
+                                <strong>🛡️ Chính sách hủy / đổi lịch YouCanBook.me:</strong>
+                                <ul class="mb-0 ps-3 mt-1">
+                                    <li>Hủy hoặc đổi lịch trực tuyến trước ít nhất <strong>60 phút</strong>.</li>
+                                    <li>Xác nhận và mã check-in tức thì gửi qua Email.</li>
+                                </ul>
+                            </div>
+
+                            <button class="btn btn-pb btn-lg w-100 py-3 fw-bold" type="submit">
+                                Xác nhận đặt sân ngay ➔
+                            </button>
+                            <div class="text-center mt-2">
+                                <a class="text-secondary small" th:href="@{/san/{slug}(slug=${court.slug},date=${selectedDate})}">
+                                    ← Quay lại chọn giờ khác
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

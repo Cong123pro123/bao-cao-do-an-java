@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Đổi lịch đặt sân', ~{::main})}">
+<head><title>Đổi lịch đặt sân</title></head>
+<body>
+<main>
+    <section class="page-hero page-hero-compact">
+        <div class="container"><span class="eyebrow">Đổi lịch</span><h1 th:text="${booking.court.name}">Sân</h1></div>
+    </section>
+    <section class="section section-tight">
+        <div class="container">
+            <div th:replace="~{fragments/flash :: flash}"></div>
+            <div class="panel">
+                <form method="get" class="d-flex flex-wrap align-items-end gap-3 mb-4"
+                      th:action="${token != null ? '/quan-ly-dat-san/doi-lich' : '/lich-cua-toi/' + booking.id + '/doi-lich'}">
+                    <input type="hidden" name="token" th:if="${token != null}" th:value="${token}">
+                    <div><label class="form-label" for="date">Ngày muốn đổi</label>
+                        <input class="form-control" id="date" type="date" name="date" th:value="${selectedDate}"></div>
+                    <button class="btn btn-pb-ghost" type="submit">Xem khung giờ</button>
+                </form>
+                <form method="post"
+                      th:action="${token != null ? '/quan-ly-dat-san/doi-lich' : '/lich-cua-toi/' + booking.id + '/doi-lich'}">
+                    <input type="hidden" name="token" th:if="${token != null}" th:value="${token}">
+                    <input type="hidden" name="date" th:value="${selectedDate}">
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3 col-lg-2" th:each="slot : ${availability}">
+                            <label class="d-block p-2 text-center rounded-3 border"
+                                   th:classappend="${slot.available ? 'border-success bg-light' : 'bg-body-secondary text-secondary'}">
+                                <input class="form-check-input me-1" type="checkbox" name="slotStarts"
+                                       th:value="${#temporals.format(slot.startAt, 'HH:mm')}" th:disabled="${!slot.available}">
+                                <span th:text="${#temporals.format(slot.startAt, 'HH:mm')}">06:00</span>
+                                <small class="d-block" th:text="${#numbers.formatDecimal(slot.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">Giá</small>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn btn-pb mt-3" type="submit">Xác nhận đổi lịch</button>
+                    <a class="btn btn-pb-ghost mt-3" th:if="${token == null}" th:href="@{/lich-cua-toi/{id}(id=${booking.id})}">Quay lại</a>
+                    <a class="btn btn-pb-ghost mt-3" th:if="${token != null}" th:href="@{/quan-ly-dat-san(token=${token})}">Quay lại</a>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

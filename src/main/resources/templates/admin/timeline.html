@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Lịch trực quan toàn sân', ~{::main})}">
+<head><title>Lịch trực quan toàn sân</title></head>
+<body>
+<main class="section">
+    <div class="container-fluid" style="max-width: 1400px">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="eyebrow">Quản trị · Điều phối &amp; Vận hành</span>
+                <h1 class="h2 mb-1">Lịch trực quan toàn hệ thống sân</h1>
+                <p class="text-secondary mb-0">Theo dõi trạng thái từng ca sân theo thời gian thực (trống, đã đặt, bảo trì) và đặt nhanh tại quầy.</p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <a class="btn btn-sm btn-pb-ghost" th:href="@{/admin/blocked-times/new}">⛔ Chặn lịch bảo trì</a>
+                <a class="btn btn-sm btn-pb" th:href="@{/admin/bookings}">📝 Quản lý đơn đặt</a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <!-- Filter bar -->
+        <form class="panel row g-3 align-items-end mb-4" method="get" th:action="@{/admin/timeline}">
+            <div class="col-sm-6 col-md-3">
+                <label class="form-label fw-semibold" for="date">Chọn ngày xem lịch</label>
+                <input class="form-control" id="date" type="date" name="date" th:value="${selectedDate}" onchange="this.form.submit()">
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="form-label fw-semibold" for="branchId">Cơ sở</label>
+                <select class="form-select" id="branchId" name="branchId" onchange="this.form.submit()">
+                    <option value="">Tất cả cơ sở</option>
+                    <option th:each="branch : ${branches}" th:value="${branch.id}" th:text="${branch.name}"
+                            th:selected="${branch.id == selectedBranchId}"></option>
+                </select>
+            </div>
+            <div class="col-md-6 d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+                <span class="badge text-bg-success px-3 py-2 fs-6">
+                    🟩 Còn trống: <strong th:text="${availableDaySlots}">0</strong>
+                </span>
+                <span class="badge text-bg-primary px-3 py-2 fs-6">
+                    🟦 Đã đặt: <strong th:text="${bookedDaySlots}">0</strong>
+                </span>
+                <span class="badge text-bg-secondary px-3 py-2 fs-6">
+                    📊 Tỷ lệ lấp đầy: <strong th:text="${occupancyRate} + '%'">0%</strong>
+                </span>
+            </div>
+        </form>
+
+        <!-- Progress bar for occupancy -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between text-secondary small mb-1">
+                <span>Tỷ lệ lấp đầy ngày <strong th:text="${#temporals.format(selectedDate, 'dd/MM/yyyy')}">01/01/2026</strong></span>
+                <span th:text="${bookedDaySlots} + ' / ' + ${totalDaySlots} + ' ca (' + ${occupancyRate} + '%)'">0 / 0 ca (0%)</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                     th:style="'width: ' + ${occupancyRate} + '%;'"
+                     th:aria-valuenow="${occupancyRate}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+
+        <!-- Master Timeline Grid -->
+        <div class="row g-4" th:if="${!#lists.isEmpty(timelines)}">
+            <div class="col-12 col-md-6 col-xl-3" th:each="courtCol : ${timelines}">
+                <div class="panel h-100 p-3 shadow-sm border">
+                    <div class="d-flex justify-content-between align-items-start mb-3 pb-2 border-bottom">
+                        <div>
+                            <h2 class="h5 mb-0 fw-bold" th:text="${courtCol.court.name}">Sân 1</h2>
+                            <small class="text-secondary" th:text="${courtCol.court.branch.name}">Cơ sở Quận 1</small>
+                        </div>
+                        <span class="badge text-bg-light border" th:text="${courtCol.bookedSlots} + '/' + ${courtCol.totalSlots} + ' ca'">0/0 ca</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <div th:each="slot : ${courtCol.items}"
+                             class="p-2 rounded-3 border transition"
+                             th:classappend="${slot.available ? 'border-success bg-white' : (slot.status == 'MAINTENANCE' ? 'bg-light text-muted border-secondary' : 'bg-success-subtle border-primary')}">
+
+                            <!-- Available Slot -->
+                            <div th:if="${slot.available}" class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="d-block text-success" th:text="${#temporals.format(slot.startAt, 'HH:mm')} + ' - ' + ${#temporals.format(slot.endAt, 'HH:mm')}">06:00 - 07:00</strong>
+                                    <small class="text-muted" th:text="${#numbers.formatDecimal(slot.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">150.000 ₫</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge text-bg-success d-block mb-1">Ca trống</span>
+                                    <a class="btn btn-xs btn-outline-secondary" title="Khóa ca này nếu cần bảo trì hoặc sự kiện"
+                                       th:href="@{/admin/blocked-times/new(courtId=${courtCol.court.id})}">
+                                        ⛔ Khóa ca
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Booked Slot -->
+                            <div th:if="${!slot.available and slot.status != 'MAINTENANCE'}" class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="d-block text-primary" th:text="${#temporals.format(slot.startAt, 'HH:mm')} + ' - ' + ${#temporals.format(slot.endAt, 'HH:mm')}">08:00 - 09:00</strong>
+                                    <span class="small fw-semibold d-block text-truncate" style="max-width: 150px"
+                                          th:text="${slot.customerName != null ? slot.customerName : 'Đã có khách'}">Nguyễn Văn A</span>
+                                    <small class="text-secondary" th:if="${slot.customerPhone != null}" th:text="${slot.customerPhone}">0901234567</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge text-bg-primary d-block mb-1" th:text="${slot.bookingStatus != null ? slot.bookingStatus : 'Đã đặt'}">Đã đặt</span>
+                                    <a class="small text-decoration-none" th:if="${slot.bookingCode != null}"
+                                       th:href="@{/admin/bookings(keyword=${slot.bookingCode})}">Chi tiết</a>
+                                </div>
+                            </div>
+
+                            <!-- Maintenance / Blocked Slot -->
+                            <div th:if="${!slot.available and slot.status == 'MAINTENANCE'}" class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="d-block text-secondary" th:text="${#temporals.format(slot.startAt, 'HH:mm')} + ' - ' + ${#temporals.format(slot.endAt, 'HH:mm')}">12:00 - 13:00</strong>
+                                    <small class="text-danger fw-semibold">⛔ Bảo trì / Chặn lịch</small>
+                                </div>
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/blocked-times(courtId=${courtCol.court.id})}">Xem</a>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(courtCol.items)}" class="text-center text-secondary py-3">
+                            <small>Sân không mở cửa vào ngày này.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(timelines)}" class="panel text-center py-5">
+            <h3 class="h5">Chưa có sân nào đang hoạt động</h3>
+            <p class="text-secondary">Vui lòng thêm sân trong mục Quản trị sân.</p>
+        </div>
+
+        <!-- Legend -->
+        <div class="panel mt-4 p-3 d-flex flex-wrap gap-4 align-items-center justify-content-center text-secondary small">
+            <div><span class="badge text-bg-success me-1">■</span> Ca trống (Sẵn sàng phục vụ khách)</div>
+            <div><span class="badge text-bg-primary me-1">■</span> Ca đã đặt (Click "Chi tiết" để xem và xử lý đơn)</div>
+            <div><span class="badge text-bg-secondary me-1">■</span> Bảo trì / Sự kiện / Chặn lịch</div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
+

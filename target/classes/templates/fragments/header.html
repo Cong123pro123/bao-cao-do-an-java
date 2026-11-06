@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="header" class="site-header">
+    <nav class="navbar navbar-expand-lg navbar-pb" aria-label="Điều hướng chính">
+        <div class="container">
+            <a class="navbar-brand brand" th:href="@{/}" aria-label="PickleBook - về trang chủ">
+                <img th:src="@{/img/logo.svg}" alt="" width="44" height="44" class="brand-logo">
+                <span class="brand-text">
+                    <strong>PickleBook</strong>
+                    <small>Pickleball Arena</small>
+                </span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                    aria-controls="mainNav" aria-expanded="false" aria-label="Mở menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav mx-auto mb-3 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${currentPath == '/' ? 'active' : ''}"
+                           th:href="@{/}">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${currentPath != null and currentPath.startsWith('/san') ? 'active' : ''}"
+                           th:href="@{/san}">Đặt sân lẻ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${currentPath != null and currentPath.startsWith('/dat-co-dinh') ? 'active' : ''}"
+                           th:href="@{/dat-co-dinh}">Đặt cố định tháng</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${currentPath == '/gioi-thieu' ? 'active' : ''}"
+                           th:href="@{/gioi-thieu}">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${currentPath == '/chinh-sach' ? 'active' : ''}"
+                           th:href="@{/chinh-sach}">Chính sách</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'STAFF')">
+                        <a class="nav-link" th:classappend="${currentPath != null and currentPath.startsWith('/admin') ? 'active' : ''}"
+                           th:href="@{/admin/dashboard}">Quản trị</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex flex-column flex-lg-row gap-2 align-items-stretch align-items-lg-center">
+                    <div sec:authorize="!isAuthenticated()" class="d-flex gap-2">
+                        <a th:href="@{/dang-nhap}" class="btn btn-pb-ghost flex-fill">Đăng nhập</a>
+                        <a th:href="@{/dang-ky}" class="btn btn-pb flex-fill">Đăng ký</a>
+                    </div>
+
+                    <div sec:authorize="isAuthenticated()" class="dropdown">
+                        <button class="btn user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <img th:if="${currentUser != null and currentUser.avatarUrl != null}"
+                                 th:src="${currentUser.avatarUrl}" alt="" class="avatar-sm">
+                            <span th:if="${currentUser == null or currentUser.avatarUrl == null}"
+                                  class="avatar-initial" th:text="${currentUser != null ? currentUser.initials : '?'}">PB</span>
+                            <span class="user-chip-name"
+                                  th:text="${currentUser != null ? currentUser.fullName : 'Tài khoản'}">Tài khoản</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li class="dropdown-header">
+                                <span class="d-block fw-semibold"
+                                      th:text="${currentUser != null ? currentUser.fullName : ''}">Tên</span>
+                                <span class="d-block small text-muted-2"
+                                      th:text="${currentUser != null ? currentUser.email : ''}">email</span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" th:href="@{/tai-khoan}">Hồ sơ của tôi</a></li>
+                            <li><a class="dropdown-item" th:href="@{/lich-cua-toi}">Lịch đặt của tôi</a></li>
+                            <li><a class="dropdown-item" th:href="@{/tai-khoan/mat-khau}">Đổi mật khẩu</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/dang-xuat}" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+</body>
+</html>

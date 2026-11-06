@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="flash" class="flash-stack" aria-live="polite">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show alert-auto" role="status">
+        <span th:text="${success}">Thành công</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}">Lỗi</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+    <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show alert-auto" role="alert">
+        <span th:text="${warning}">Cảnh báo</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+</div>
+</body>
+</html>

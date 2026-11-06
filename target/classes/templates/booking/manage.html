@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Quản lý đơn đặt sân', ~{::main})}">
+<head><title>Quản lý đơn đặt sân</title></head>
+<body>
+<main>
+    <section class="section">
+        <div class="container">
+            <div class="panel mx-auto" style="max-width: 760px">
+                <div th:replace="~{fragments/flash :: flash}"></div>
+                <span class="eyebrow">Liên kết quản lý riêng tư</span>
+                <h1 class="section-title" th:text="${booking.bookingCode}">Mã đặt</h1>
+                <p th:text="${booking.court.name} + ' · ' + ${#temporals.format(booking.startAt, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#temporals.format(booking.endAt, 'HH:mm')}">Chi tiết</p>
+                <p>Trạng thái: <strong th:text="${booking.status.label}">Chờ xác nhận</strong></p>
+                <div class="d-flex flex-wrap gap-2" th:if="${booking.cancellable}">
+                    <a class="btn btn-pb-ghost" th:href="@{/quan-ly-dat-san/doi-lich(token=${token})}">Đổi lịch</a>
+                    <form th:action="@{/quan-ly-dat-san/huy}" method="post">
+                        <input type="hidden" name="token" th:value="${token}">
+                        <button class="btn btn-outline-danger" type="submit"
+                                onclick="return confirm('Bạn có chắc muốn hủy đơn này?')">Hủy đơn</button>
+                    </form>
+                </div>
+                <a th:href="@{/}" class="btn btn-pb-ghost mt-3">Về trang chủ</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

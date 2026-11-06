@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Quản lý sân', ~{::main})}">
+<head><title>Quản lý sân</title></head>
+<body>
+<main class="section">
+    <div class="container">
+        <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="eyebrow">Quản trị · Cơ sở và sân</span>
+                <h1 class="h2 mb-1">Danh sách sân</h1>
+                <p class="text-secondary mb-0">Cập nhật thông tin, giá cơ bản và giờ hoạt động cho từng sân.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-pb-ghost" th:href="@{/admin/dashboard}">Tổng quan</a>
+                <a class="btn btn-pb" th:href="@{/admin/courts/new}">Thêm sân</a>
+            </div>
+        </div>
+        <div th:replace="~{fragments/flash :: flash}"></div>
+        <div class="panel p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                    <tr><th>Tên sân</th><th>Cơ sở</th><th>Loại</th><th>Giá cơ bản</th><th>Trạng thái</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="court : ${courts}">
+                        <td>
+                            <strong class="d-block" th:text="${court.name}">Sân</strong>
+                            <span class="small text-secondary" th:text="${court.slotMinutes} + ' phút/khung'">60 phút/khung</span>
+                        </td>
+                        <td>
+                            <span class="d-block" th:text="${court.branch.name}">Cơ sở</span>
+                            <span class="small text-secondary" th:text="${court.branch.address}">Địa chỉ</span>
+                        </td>
+                        <td th:text="${court.courtType.label}">Ngoài trời</td>
+                        <td th:text="${#numbers.formatDecimal(court.basePrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">150.000 ₫</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${court.status.name() == 'ACTIVE' ? 'text-bg-success' : court.status.name() == 'MAINTENANCE' ? 'text-bg-warning' : 'text-bg-secondary'}"
+                                  th:text="${court.status.label}">Đang hoạt động</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-1 flex-wrap">
+                                <a class="btn btn-sm btn-outline-info" title="Xem lịch sân" th:href="@{/admin/timeline(branchId=${court.branch.id})}">📅 Lịch</a>
+                                <a class="btn btn-sm btn-outline-warning" title="Chặn bảo trì" th:href="@{/admin/blocked-times/new(courtId=${court.id})}">⛔ Chặn</a>
+                                <a class="btn btn-sm btn-pb-ghost" th:href="@{/admin/courts/{id}/edit(id=${court.id})}">Sửa</a>
+                                <form th:action="@{/admin/courts/{id}/status(id=${court.id})}" method="post">
+                                    <input type="hidden" name="status" th:value="${court.status.name() == 'ACTIVE' ? 'MAINTENANCE' : 'ACTIVE'}">
+                                    <button class="btn btn-sm btn-outline-secondary" type="submit"
+                                            th:text="${court.status.name() == 'ACTIVE' ? 'Tạm ngưng' : 'Mở nhận đặt'}">Tạm ngưng</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(courts)}">
+                        <td colspan="6" class="text-center py-5">
+                            <strong class="d-block">Chưa có sân nào</strong>
+                            <span class="text-secondary">Thêm sân đầu tiên để khách có thể xem lịch.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

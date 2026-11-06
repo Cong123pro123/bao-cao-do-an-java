@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Danh sách sân Pickleball', ~{::main})}">
+<head><title>Danh sách sân Pickleball</title></head>
+<body>
+<main>
+    <section class="page-hero">
+        <div class="container">
+            <span class="eyebrow">Hệ thống sân Pickleball tiêu chuẩn thi đấu</span>
+            <h1 class="hero-title mb-2">Tìm kiếm &amp; Đặt sân online</h1>
+            <p class="hero-sub mb-0">Hệ thống đặt sân thông minh với ma trận khung giờ thời gian thực, bảng giá minh bạch và giữ chỗ tức thì.</p>
+        </div>
+    </section>
+
+    <section class="section section-tight">
+        <div class="container">
+            <!-- Search & Filter Bar -->
+            <form class="panel row g-3 align-items-end mb-4 shadow-sm" method="get" th:action="@{/san}">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="keyword">Từ khóa tìm kiếm</label>
+                    <input class="form-control" id="keyword" name="keyword" th:value="${keyword}"
+                           placeholder="Tên sân, tiện ích, địa chỉ...">
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold" for="branchId">Khu vực / Cơ sở</label>
+                    <select class="form-select" id="branchId" name="branchId">
+                        <option value="">Tất cả cơ sở</option>
+                        <option th:each="branch : ${branches}" th:value="${branch.id}"
+                                th:selected="${branch.id == selectedBranchId}"
+                                th:text="${branch.name}">PickleBook - Quận 1</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold" for="courtType">Loại sân</label>
+                    <select class="form-select" id="courtType" name="courtType">
+                        <option value="">Tất cả loại sân</option>
+                        <option th:each="type : ${courtTypes}" th:value="${type}"
+                                th:selected="${type == selectedCourtType}"
+                                th:text="${type.label}">Trong nhà</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button class="btn btn-pb w-100" type="submit">🔍 Tìm sân</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/san}">Đặt lại</a>
+                </div>
+            </form>
+
+            <!-- Court List Grid -->
+            <div class="row g-4" th:if="${!#lists.isEmpty(courts)}">
+                <div class="col-md-6 col-lg-4" th:each="court : ${courts}">
+                    <article class="panel h-100 p-0 overflow-hidden d-flex flex-column hover-shadow transition border">
+                        <div class="position-relative">
+                            <img class="w-100" style="height: 200px; object-fit: cover"
+                                 th:src="${court.images != null && !court.images.isEmpty() && court.images[0].imageUrl != null ? court.images[0].imageUrl : '/img/banners/banner-1.svg'}"
+                                 th:alt="${court.name != null ? court.name : 'Sân Pickleball'}">
+                            <span class="badge text-bg-dark position-absolute top-0 start-0 m-3 px-2 py-1"
+                                  th:text="${court.courtType != null ? court.courtType.label : 'Tiêu chuẩn'}">Ngoài trời</span>
+                            <span class="badge text-bg-success position-absolute bottom-0 end-0 m-3 px-3 py-1 fs-6 fw-bold"
+                                  th:text="${court.basePrice != null ? (#numbers.formatDecimal(court.basePrice, 0, 'COMMA', 0, 'POINT') + ' ₫/h') : 'Liên hệ'}">150.000 ₫/h</span>
+                        </div>
+
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h2 class="h5 fw-bold mb-1" th:text="${court.name != null ? court.name : 'Sân Pickleball'}">Tên sân</h2>
+                            <p class="small text-secondary mb-2" th:if="${court.branch != null}">
+                                📍 <strong th:text="${court.branch.name}">Cơ sở</strong>: <span th:text="${court.branch.address}">Địa chỉ</span>
+                            </p>
+
+                            <p class="text-secondary small flex-grow-1 mb-3"
+                               th:text="${court.description != null ? (court.description.length() > 120 ? court.description.substring(0, 117) + '...' : court.description) : 'Mặt sân thi đấu cao cấp, ánh sáng tiêu chuẩn.'}">
+                                Mô tả sân
+                            </p>
+
+                            <div class="d-flex flex-wrap gap-1 mb-3" th:if="${court.amenityList != null && !court.amenityList.isEmpty()}">
+                                <span class="badge text-bg-light border small" th:each="amenity : ${court.amenityList}" th:text="${amenity}">Wi-Fi</span>
+                            </div>
+
+                            <a class="btn btn-pb w-100 py-2 fw-semibold" th:href="@{/san/{slug}(slug=${court.slug != null ? court.slug : court.id})}">
+                                📅 Xem lịch trống &amp; Đặt sân
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="panel text-center py-5 shadow-sm" th:if="${#lists.isEmpty(courts)}">
+                <div class="fs-1 mb-2">🏸</div>
+                <h2 class="h4">Không tìm thấy sân phù hợp</h2>
+                <p class="text-secondary mb-3">Thử thay đổi bộ lọc khu vực hoặc xóa từ khóa tìm kiếm để xem tất cả các sân.</p>
+                <a class="btn btn-pb" th:href="@{/san}">Xem tất cả sân</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

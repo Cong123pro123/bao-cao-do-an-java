@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Yêu cầu không hợp lệ', ~{::main})}">
+<head><title>Yêu cầu không hợp lệ</title></head>
+<body>
+<main>
+    <section class="error-page">
+        <div class="container">
+            <div class="error-card">
+                <span class="error-code" th:text="${status != null ? status : 400}">400</span>
+                <span class="eyebrow">Chưa thể xử lý</span>
+                <h1>Yêu cầu chưa hợp lệ</h1>
+                <p th:text="${message != null ? message : 'Vui lòng kiểm tra lại thông tin và thử lại.'}">
+                    Vui lòng kiểm tra lại thông tin và thử lại.
+                </p>
+                <div class="error-actions">
+                    <a th:href="@{/}" class="btn btn-pb">Về trang chủ</a>
+                    <a th:href="javascript:history.back()" class="btn btn-pb-ghost">Quay lại trang trước</a>
+                </div>
+                <p class="error-help">Nếu lỗi tiếp diễn, hãy liên hệ bộ phận hỗ trợ của sân.</p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

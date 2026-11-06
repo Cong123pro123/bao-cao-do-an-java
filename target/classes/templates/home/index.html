@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout('Trang chủ', ~{::main})}">
+<head><title>Trang chủ</title></head>
+<body>
+<main>
+    <section class="hero">
+        <div class="hero-glow hero-glow-1"></div>
+        <div class="hero-glow hero-glow-2"></div>
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <span class="eyebrow">Pickleball · Đặt sân trực tuyến</span>
+                    <h1 class="hero-title" th:text="${heroTitle}">Đặt sân Pickleball. Chơi là ghiền.</h1>
+                    <p class="hero-sub" th:text="${heroSubtitle}">
+                        Xem khung giờ trống theo thời gian thực, đặt sân trong 30 giây, hủy đổi linh hoạt.
+                    </p>
+                    <div class="hero-actions">
+                        <a th:href="@{/san}" class="btn btn-pb btn-lg-pb">Đặt sân ngay</a>
+                        <a th:href="@{/gioi-thieu}" class="btn btn-pb-ghost btn-lg-pb">Tìm hiểu PickleBook</a>
+                    </div>
+                    <!-- Quick Search Widget on Homepage -->
+                    <form class="panel p-3 mt-4 bg-white border shadow-sm d-flex flex-wrap gap-2 align-items-center" method="get" th:action="@{/san}">
+                        <div class="flex-grow-1" style="min-width: 200px;">
+                            <input class="form-control" name="keyword" placeholder="Nhập tên sân, tiện ích, cơ sở...">
+                        </div>
+                        <div style="min-width: 140px;">
+                            <select class="form-select" name="courtType">
+                                <option value="">Tất cả loại sân</option>
+                                <option value="OUTDOOR">Ngoài trời</option>
+                                <option value="INDOOR">Trong nhà</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-pb" type="submit">🔍 Tìm sân trống</button>
+                    </form>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <strong>4</strong>
+                            <span>Sân tiêu chuẩn</span>
+                        </div>
+                        <div class="hero-stat">
+                            <strong>05:30 – 23:00</strong>
+                            <span>Khung giờ linh hoạt</span>
+                        </div>
+                        <div class="hero-stat">
+                            <strong>30 giây</strong>
+                            <span>Hoàn tất đặt sân</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="preview-card">
+                        <div class="preview-card-head">
+                            <div>
+                                <span class="live-dot"></span>
+                                <strong>Sân Trung Tâm</strong>
+                                <small>Lịch minh họa · hôm nay</small>
+                            </div>
+                            <span class="badge-soft">Còn 6 giờ trống</span>
+                        </div>
+                        <div class="preview-slots">
+                            <span class="preview-slot is-free">06:00</span>
+                            <span class="preview-slot is-free">07:00</span>
+                            <span class="preview-slot is-booked">08:00</span>
+                            <span class="preview-slot is-free">09:00</span>
+                            <span class="preview-slot is-selected">17:00</span>
+                            <span class="preview-slot is-selected">18:00</span>
+                            <span class="preview-slot is-booked">19:00</span>
+                            <span class="preview-slot is-free">20:00</span>
+                        </div>
+                        <div class="preview-legend">
+                            <span><i class="dot dot-free"></i>Trống</span>
+                            <span><i class="dot dot-booked"></i>Đã đặt</span>
+                            <span><i class="dot dot-selected"></i>Đang chọn</span>
+                        </div>
+                        <div class="preview-card-foot">
+                            <div>
+                                <span>2 khung giờ · 17:00 – 19:00</span>
+                                <strong>380.000 ₫</strong>
+                            </div>
+                            <span class="btn btn-pb btn-sm">Xác nhận</span>
+                        </div>
+                    </div>
+                    <div class="float-card float-card-1">
+                        <span class="float-icon">✓</span>
+                        <div><strong>Xác nhận tức thì</strong><small>Email gửi ngay sau khi đặt</small></div>
+                    </div>
+                    <div class="float-card float-card-2">
+                        <span class="float-icon">↺</span>
+                        <div><strong>Hủy linh hoạt</strong><small>Trước giờ chơi 12 tiếng</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <span class="eyebrow">Vì sao chọn PickleBook</span>
+                <h2 class="section-title">Đặt sân nhanh, chơi yên tâm</h2>
+                <p class="section-sub">Thiết kế cho người chơi bận rộn: nhìn thấy đúng khung giờ còn trống, biết trước tổng tiền và không lo bị trùng lịch.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <article class="feature-card">
+                        <span class="feature-icon">01</span>
+                        <h3>Lịch trống thời gian thực</h3>
+                        <p>Chọn sân, chọn ngày và xem ngay khung giờ nào còn trống. Giá hiển thị theo từng khung giờ, không phát sinh bất ngờ.</p>
+                    </article>
+                </div>
+                <div class="col-md-4">
+                    <article class="feature-card">
+                        <span class="feature-icon">02</span>
+                        <h3>Không bao giờ trùng lịch</h3>
+                        <p>Hệ thống khóa dữ liệu và kiểm tra lại ở server trước khi xác nhận, đảm bảo hai người không thể giữ cùng một khung giờ.</p>
+                    </article>
+                </div>
+                <div class="col-md-4">
+                    <article class="feature-card">
+                        <span class="feature-icon">03</span>
+                        <h3>Chủ động hủy hoặc đổi</h3>
+                        <p>Kế hoạch thay đổi? Bạn có thể tự hủy hoặc đổi lịch theo chính sách minh bạch, ngay trong tài khoản hoặc qua link trong email.</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-soft">
+        <div class="container">
+            <div class="row align-items-end g-4 mb-4">
+                <div class="col-lg-7">
+                    <span class="eyebrow">Quy trình 3 bước</span>
+                    <h2 class="section-title mb-2">Từ ý tưởng đến sân đấu trong vài phút</h2>
+                </div>
+                <div class="col-lg-5">
+                    <p class="section-sub mb-0">Không cần gọi điện, không cần chờ xác nhận thủ công. Mọi thứ diễn ra ngay trên website.</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <span class="step-number">1</span>
+                        <h3>Tạo tài khoản</h3>
+                        <p>Đăng ký bằng email và số điện thoại để quản lý toàn bộ lịch chơi của bạn.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <span class="step-number">2</span>
+                        <h3>Chọn sân và giờ</h3>
+                        <p>Xem lưới khung giờ trống, chọn một hoặc nhiều giờ liên tiếp và xem tổng tiền ngay.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <span class="step-number">3</span>
+                        <h3>Nhận xác nhận</h3>
+                        <p>Mã đặt sân và email xác nhận được gửi tức thì, kèm link quản lý đơn và nhắc lịch trước giờ chơi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="cta-band">
+                <div class="cta-band-copy">
+                    <span class="eyebrow eyebrow-light">Sẵn sàng vào sân?</span>
+                    <h2>Giữ khung giờ đẹp nhất trước khi người khác.</h2>
+                    <p>Tạo tài khoản miễn phí — chỉ mất chưa đến một phút.</p>
+                </div>
+                <div class="cta-band-actions">
+                    <a th:href="@{/dang-ky}" class="btn btn-lime btn-lg-pb">Tạo tài khoản</a>
+                    <a th:href="@{/dang-nhap}" class="btn btn-outline-light btn-lg-pb">Tôi đã có tài khoản</a>
+                </div>
+            </div>
+
+            <div class="info-strip">
+                <div>
+                    <span class="info-strip-label">Hotline</span>
+                    <strong th:text="${site != null and site['site.phone'] != null ? site['site.phone'] : '0909 123 456'}">0909 123 456</strong>
+                </div>
+                <div>
+                    <span class="info-strip-label">Địa chỉ</span>
+                    <strong th:text="${site != null and site['site.address'] != null ? site['site.address'] : '128 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh'}">128 Nguyễn Văn Linh, Quận 7</strong>
+                </div>
+                <div>
+                    <span class="info-strip-label">Giờ mở cửa</span>
+                    <strong th:text="${site != null and site['site.open_hours'] != null ? site['site.open_hours'] : '06:00 - 22:00 hằng ngày'}">06:00 - 22:00 hằng ngày</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title != null ? title + ' · PickleBook' : 'PickleBook – Đặt sân Pickleball online'}">PickleBook</title>
+    <meta name="description"
+          th:content="${site != null and site['seo.description'] != null
+                ? site['seo.description']
+                : 'PickleBook - đặt sân pickleball trực tuyến, minh bạch giá và khung giờ.'}">
+    <meta name="theme-color" content="#0f7b3f">
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}">
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/logo.svg}">
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+</html>
